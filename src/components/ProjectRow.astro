@@ -21,7 +21,7 @@ const href = `/${lang}/projects/${project.slug}`;
   <span class="archive-word mono" aria-hidden="true">DYNAMIC / ARCHIVE / {project.index}</span>
 </article>
 <style>
-  .project-row { position: relative; display: grid; grid-template-columns: 56px repeat(11, minmax(0, 1fr)); min-height: min(850px, 78vw); margin-block: clamp(70px, 11vw, 170px); isolation: isolate; }
+  .project-row { position: relative; display: grid; grid-template-columns: 56px repeat(11, minmax(0, 1fr)); min-height: min(930px, 86vw); margin-block: clamp(70px, 11vw, 170px); padding-bottom: clamp(76px, 8vw, 118px); isolation: isolate; }
   .project-row::before { content: ''; position: absolute; z-index: -2; inset: 6% 0 3% 8%; background: color-mix(in srgb, var(--section-color) 17%, var(--surface)); clip-path: polygon(0 5%, 95% 0, 100% 88%, 8% 100%); }
   .project-row.reverse::before { inset: 3% 8% 6% 0; clip-path: polygon(5% 0, 100% 7%, 92% 100%, 0 88%); }
   .archive-rail { grid-column: 1; grid-row: 1; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 18px 0; background: var(--section-color); color: #11110f; writing-mode: vertical-rl; }
@@ -44,10 +44,10 @@ const href = `/${lang}/projects/${project.slug}`;
   .project-media:hover { transform: translate(-7px, -8px) rotate(-2deg); filter: drop-shadow(27px 32px 0 var(--section-color)); }
   .reverse .project-media:hover { transform: translate(7px, -8px) rotate(2deg); }
   .project-media:hover :global(.project-visual) { clip-path: polygon(2% 3%, 98% 0, 100% 97%, 0 100%); transform: scale(.985); }
-  .archive-word { position: absolute; z-index: -1; right: 0; bottom: -38px; color: color-mix(in srgb, var(--section-color) 65%, transparent); font-size: clamp(20px, 3.4vw, 54px); white-space: nowrap; }
+  .archive-word { position: absolute; z-index: 1; right: 18px; bottom: 18px; color: var(--section-color); font-size: clamp(18px, 2.8vw, 42px); white-space: nowrap; opacity: .46; }
   .reverse .archive-word { right: auto; left: 0; }
   @media (max-width: 860px) {
-    .project-row { grid-template-columns: 34px repeat(7, minmax(0, 1fr)); grid-template-rows: auto auto; min-height: 0; margin-block: 85px 110px; }
+    .project-row { grid-template-columns: 34px repeat(7, minmax(0, 1fr)); grid-template-rows: auto auto; min-height: 0; margin-block: 85px 110px; padding-bottom: 50px; }
     .project-row::before, .project-row.reverse::before { inset: 3% 0 0 12px; }
     .archive-rail { grid-column: 1; grid-row: 1 / 3; }
     .project-media, .reverse .project-media { grid-column: 2 / 9; grid-row: 1; align-self: start; transform: rotate(-1deg); filter: drop-shadow(9px 12px 0 #11110f); }
@@ -56,9 +56,12 @@ const href = `/${lang}/projects/${project.slug}`;
     .project-copy, .reverse .project-copy { grid-column: 2 / 9; grid-row: 2; align-self: start; width: calc(100% - 18px); margin: -64px 0 0 18px; padding: 24px; transform: rotate(.4deg); box-shadow: -7px 7px 0 var(--section-color); }
     .reverse .project-copy { transform: rotate(-.4deg); }
     .project-copy h2 { font-size: var(--type-project-title); }
-    .archive-word { bottom: -34px; max-width: 100%; overflow: hidden; font-size: 17px; }
+    .archive-word { right: 0; bottom: 10px; font-size: clamp(11px, 2.7vw, 14px); opacity: .5; }
+    .reverse .archive-word { left: 0; }
   }
   @media (max-width: 480px) {
+    .project-row { padding-bottom: 0; }
+    .archive-word { display: none; }
     .project-copy, .reverse .project-copy { width: calc(100% - 8px); margin-top: -42px; margin-left: 8px; padding: 19px; }
     .project-copy h2 { margin-block: 22px 14px; }
     .project-copy p { font-size: 16px; line-height: 1.65; }

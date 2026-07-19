@@ -6,6 +6,7 @@ import DataScene from '../../components/DataScene.astro';
 import SignalRunner from '../../components/SignalRunner.astro';
 import ProjectRow from '../../components/ProjectRow.astro';
 import ArrowLink from '../../components/ArrowLink.astro';
+import SectionNavigator from '../../components/SectionNavigator.astro';
 import { locales, profile, type Locale } from '../../data/site';
 import { projects } from '../../data/projects';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
@@ -13,16 +14,30 @@ const lang = Astro.params.lang as Locale;
 const p = profile[lang];
 const posts = (await getCollection('blog', ({ data }) => data.lang === lang && !data.draft)).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 2);
 const copy = lang === 'zh' ? {
-  title: '沈野 — 创意开发者与 AI 产品设计师', work: '精选项目', allWork: '浏览全部项目', journal: '最近写作', allJournal: '阅读全部文章', read: '阅读文章',
+  title: '花辞树 — 创意开发者与 AI 产品设计师', work: '精选项目', allWork: '浏览全部项目', journal: '最近写作', allJournal: '阅读全部文章', read: '阅读文章',
   scene: ['视差响应', '实时场景', 'AI 导航'], introLabel: '任务日志', runner: '数据分身 / 001', signal: '信号已锁定',
 } : {
-  title: 'Shen Ye — Creative Developer & AI Product Designer', work: 'Selected work', allWork: 'View all projects', journal: 'Recent writing', allJournal: 'Read all writing', read: 'Read article',
+  title: '花辞树 — Creative Developer & AI Product Designer', work: 'Selected work', allWork: 'View all projects', journal: 'Recent writing', allJournal: 'Read all writing', read: 'Read article',
   scene: ['PARALLAX', 'LIVE SCENE', 'AI NAV'], introLabel: 'Mission log', runner: 'SIGNAL RUNNER / 001', signal: 'SIGNAL ACQUIRED',
 };
 const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+const sectionItems = lang === 'zh'
+  ? [
+      { id: 'overview', label: '首页概览' },
+      { id: 'intro', label: '个人简介' },
+      { id: 'work', label: '精选项目' },
+      { id: 'journal', label: '最近写作' },
+    ]
+  : [
+      { id: 'overview', label: 'Overview' },
+      { id: 'intro', label: 'Introduction' },
+      { id: 'work', label: 'Selected work' },
+      { id: 'journal', label: 'Recent writing' },
+    ];
 ---
 <BaseLayout title={copy.title} description={p.statement} lang={lang}>
-  <section class="hero">
+  <SectionNavigator lang={lang} items={sectionItems} />
+  <section id="overview" class="hero" data-section-anchor>
     <DataScene />
     <div class="hero-grid" aria-hidden="true"></div>
     <div class="hero-slice" aria-hidden="true"></div>
@@ -35,7 +50,13 @@ const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { 
       </div>
       <div class="hero-main" data-hero-copy>
         <span class="runner-label mono">{copy.runner}</span>
-        <h1 class:list={{ 'name-en': lang === 'en' }}>{lang === 'zh' ? <><span>沈</span><span>野</span></> : <><span>SHEN</span><span>YE</span></>}</h1>
+        <div class="name-camera">
+          <h1 class="name-cards" aria-label="花辞树">
+            <span class="name-card card-flower" aria-hidden="true"><b>花</b><i class="mono">01</i></span>
+            <span class="name-card card-word" aria-hidden="true"><b>辞</b><i class="mono">02</i></span>
+            <span class="name-card card-tree" aria-hidden="true"><b>树</b><i class="mono">03</i></span>
+          </h1>
+        </div>
         <p>{p.statement}</p>
       </div>
       <a class="scroll-cue mono" href="#intro"><ArrowDown size={14} /><span>SCROLL / 01</span></a>
@@ -43,21 +64,21 @@ const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { 
     </div>
   </section>
 
-  <section id="intro" class="intro section">
+  <section id="intro" class="intro section" data-section-anchor>
     <div class="container intro-grid" data-reveal>
-      <div class="intro-meta"><span class="eyebrow">{copy.introLabel}</span><span class="intro-index mono">SHY / 31.2304° N</span></div>
+      <div class="intro-meta"><span class="eyebrow">{copy.introLabel}</span><span class="intro-index mono">HCS / 31.2304° N</span></div>
       <p class="lede">{p.intro}</p>
     </div>
   </section>
 
-  <section id="work" class="work-section">
+  <section id="work" class="work-section" data-section-anchor>
     <div class="container">
       <header class="section-head"><span class="eyebrow">01 / {copy.work}</span><ArrowLink href={`/${lang}/projects`} label={copy.allWork} /></header>
       {projects.slice(0, 2).map((project, i) => <ProjectRow project={project} lang={lang} position={i} />)}
     </div>
   </section>
 
-  <section class="journal-preview section">
+  <section id="journal" class="journal-preview section" data-section-anchor>
     <div class="container">
       <header class="section-head"><span class="eyebrow">02 / {copy.journal}</span><ArrowLink href={`/${lang}/journal`} label={copy.allJournal} /></header>
       <div class="home-posts">
@@ -85,16 +106,25 @@ const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { 
   .signal-state i { width: 6px; height: 6px; background: #37c6a2; box-shadow: 0 0 9px #37c6a2; }
   .hero-main { position: relative; z-index: 5; align-self: center; width: min(42vw, 600px); padding-top: 4vh; }
   .runner-label { display: inline-block; margin-bottom: 17px; padding: 7px 9px; background: var(--hero-cream); color: #0b0b0a; }
-  .hero-main h1 { position: relative; display: flex; align-items: baseline; margin: 0; padding-bottom: .16em; color: var(--hero-cream); font-size: var(--type-display-xl); line-height: .86; font-weight: 700; letter-spacing: 0; text-shadow: 8px 8px 0 #0b0b0a, 11px 11px 0 #ff4f2b; }
-  .hero-main h1 span:last-child { transform: translateY(34%); }
-  .hero-main h1.name-en { display: grid; padding-bottom: 0; font-size: clamp(70px, 7vw, 112px); line-height: .8; }
-  .hero-main h1.name-en span:last-child { padding-left: .65em; transform: none; color: #ff4f2b; text-shadow: 6px 6px 0 #0b0b0a; }
+  .name-camera { width: min(50vw, 710px); padding: 16px 20px 30px 6px; perspective: 1100px; pointer-events: none; }
+  .name-cards { position: relative; display: flex; align-items: center; gap: clamp(8px, 1.15vw, 18px); width: max-content; margin: 0; transform-style: preserve-3d; will-change: transform; }
+  .name-card { position: relative; display: grid; place-items: center; width: clamp(112px, 11vw, 168px); aspect-ratio: .82; border: 3px solid #0b0b0a; box-shadow: 9px 11px 0 #0b0b0a; transform-style: preserve-3d; transform-origin: center; will-change: transform, filter, opacity; }
+  .name-card::before { content: ''; position: absolute; z-index: -1; inset: 9px -11px -11px 9px; border: 2px solid currentColor; background: var(--card-back); transform: translateZ(-24px); }
+  .name-card b { font-size: clamp(84px, 9.4vw, 144px); line-height: 1; font-weight: 700; }
+  .name-card i { position: absolute; right: 8px; bottom: 7px; font-size: 10px; font-style: normal; opacity: .68; }
+  .card-flower { --card-back: #ff4f2b; color: #0b0b0a; background: #f1efe6; clip-path: polygon(13% 0, 100% 0, 100% 100%, 0 100%, 0 13%); transform: rotate(-1.5deg); }
+  .card-word { --card-back: #f1efe6; z-index: 2; color: #0b0b0a; background: #ff4f2b; clip-path: polygon(0 0, 91% 0, 100% 10%, 100% 100%, 0 100%); transform: translateY(9px) rotate(.8deg); }
+  .card-tree { --card-back: #37c6a2; color: #f1efe6; background: #0b0b0a; clip-path: polygon(0 0, 100% 0, 100% 87%, 87% 100%, 0 100%); transform: translateY(2px) rotate(1.4deg); }
+  .name-cards.is-live .name-card { animation: card-breathe 6.4s ease-in-out infinite alternate; }
+  .name-cards.is-live .card-word { animation-delay: -2.1s; }
+  .name-cards.is-live .card-tree { animation-delay: -4.2s; }
+  @keyframes card-breathe { to { translate: 0 -3px; filter: drop-shadow(0 7px 10px #0004); } }
   .hero-main p { margin: clamp(54px, 8vh, 84px) 0 0; max-width: 480px; padding-left: 18px; border-left: 4px solid #ff4f2b; font-size: clamp(17px, 1.55vw, 24px); line-height: 1.45; text-wrap: balance; }
   .scroll-cue { display: flex; align-items: center; gap: 10px; width: max-content; color: #ffffff91; }
   .scene-keys { position: absolute; right: var(--pad); bottom: 28px; display: flex; gap: 22px; color: #ffffff70; }
   .scene-keys span { display: flex; gap: 6px; } .scene-keys b { color: #fff; font-weight: 400; }
-  .intro { position: relative; min-height: 66vh; display: grid; align-items: center; overflow: hidden; }
-  .intro::after { content: 'LOG / 01'; position: absolute; right: -1vw; bottom: -4vw; color: var(--line); font: 600 clamp(80px, 16vw, 240px)/.8 'DM Mono', monospace; pointer-events: none; }
+  .intro { position: relative; min-height: 66vh; display: grid; align-items: center; overflow: hidden; padding-bottom: clamp(190px, 21vw, 330px); }
+  .intro::after { content: 'LOG / 01'; position: absolute; z-index: 0; right: var(--pad); bottom: clamp(34px, 5vw, 76px); color: var(--line); font: 600 clamp(64px, 10.5vw, 164px)/1 'DM Mono', monospace; white-space: nowrap; opacity: .58; pointer-events: none; }
   .intro-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(180px, .75fr) 2fr; gap: clamp(40px, 8vw, 140px); align-items: start; }
   .intro-meta { display: grid; gap: 44px; }
   .intro-grid .lede { margin: 0; }
@@ -119,13 +149,17 @@ const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { 
     .hero-top > span:last-child, .scene-keys, .hero :global(.scene-status) { display: none; }
     .hero-main { align-self: start; width: 100%; padding-top: 9vh; }
     .runner-label { margin-bottom: 12px; font-size: 10px; }
-    .hero-main h1 { width: max-content; font-size: clamp(82px, 24vw, 108px); text-shadow: 5px 5px 0 #0b0b0a, 7px 7px 0 #ff4f2b; }
-    .hero-main h1.name-en { font-size: clamp(50px, 15vw, 68px); }
+    .name-camera { width: 100%; padding: 8px 14px 24px 0; perspective: 700px; }
+    .name-cards { gap: 6px; }
+    .name-card { width: clamp(86px, 25vw, 106px); border-width: 2px; box-shadow: 5px 7px 0 #0b0b0a; }
+    .name-card::before { inset: 5px -6px -7px 5px; border-width: 1px; }
+    .name-card b { font-size: clamp(64px, 19vw, 82px); }
     .hero-main p { position: absolute; top: min(55vh, 490px); left: 0; width: min(86vw, 360px); margin: 0; padding: 11px 12px 11px 14px; border-left-width: 3px; background: #090908e6; font-size: 16px; line-height: 1.45; }
     .scroll-cue { align-self: end; }
     .intro-grid { grid-template-columns: 1fr; gap: 34px; }
     .intro-meta { grid-template-columns: 1fr auto; align-items: center; gap: 20px; }
-    .intro::after { bottom: 0; font-size: 84px; }
+    .intro { padding-bottom: 80px; }
+    .intro::after { display: none; }
     .section-head { min-height: 120px; }
     .section-head :global(.rule-link) { font-size: 0; gap: 0; border: 0; padding: 12px; }
     .home-post a { grid-template-columns: 36px 1fr; gap: 12px; }
@@ -137,30 +171,108 @@ const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { 
   import { ScrollTrigger } from 'gsap/ScrollTrigger';
   gsap.registerPlugin(ScrollTrigger);
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hero = document.querySelector<HTMLElement>('.hero');
   if (!reduceMotion) {
-    const heroTimeline = gsap.timeline({ defaults: { ease: 'power4.out' } });
+    const name = document.querySelector<HTMLElement>('.name-cards');
+    const nameCards = gsap.utils.toArray<HTMLElement>('.name-card');
+    const heroTimeline = gsap.timeline({
+      defaults: { ease: 'power4.out' },
+      onStart: () => name?.classList.remove('is-live'),
+      onComplete: () => name?.classList.add('is-live'),
+    });
     heroTimeline
       .from('.runner-stage', { xPercent: 18, opacity: 0, duration: 1.05 }, .1)
-      .from('.hero-main h1 span', { yPercent: 55, opacity: 0, stagger: .1, duration: .9 }, .2)
-      .from('.runner-label, .hero-main p', { x: -24, opacity: 0, stagger: .12, duration: .7 }, .48)
-      .from('.hero-top, .scroll-cue, .scene-keys', { opacity: 0, duration: .6 }, .65);
+      .fromTo(nameCards,
+        { z: (index) => [-520, -760, -610][index], x: (index) => [-105, 0, 110][index], y: (index) => [48, -30, 56][index], rotateY: (index) => [30, -8, -28][index], rotateX: (index) => [-12, 16, -8][index], rotateZ: (index) => [-9, 5, 10][index], scale: .42, opacity: 0, filter: 'blur(14px)' },
+        { z: 0, x: 0, y: (index) => [0, 9, 2][index], rotateY: 0, rotateX: 0, rotateZ: (index) => [-1.5, .8, 1.4][index], scale: 1, opacity: 1, filter: 'blur(0px)', stagger: .14, duration: 1.18 }, .12)
+      .to(nameCards, { scale: 1.035, duration: .12, stagger: .06, ease: 'power2.out' }, .98)
+      .to(nameCards, { scale: 1, duration: .28, stagger: .06, ease: 'back.out(2)' }, 1.1)
+      .from('.runner-label, .hero-main p', { x: -24, opacity: 0, stagger: .12, duration: .7 }, .58)
+      .from('.hero-top, .scroll-cue, .scene-keys', { opacity: 0, duration: .6 }, .72);
     ScrollTrigger.create({
       trigger: '.hero',
       start: 'top 65%',
       end: 'bottom top',
       onEnterBack: () => heroTimeline.restart(),
     });
-    const hero = document.querySelector<HTMLElement>('.hero');
     if (hero && matchMedia('(pointer: fine)').matches) {
       hero.addEventListener('pointermove', (event) => {
         const bounds = hero.getBoundingClientRect();
-        hero.style.setProperty('--mx', String((event.clientX - bounds.left) / bounds.width - .5));
-        hero.style.setProperty('--my', String((event.clientY - bounds.top) / bounds.height - .5));
+        const x = (event.clientX - bounds.left) / bounds.width - .5;
+        const y = (event.clientY - bounds.top) / bounds.height - .5;
+        hero.style.setProperty('--mx', String(x));
+        hero.style.setProperty('--my', String(y));
+        gsap.to(name, { rotateY: x * 3.2, rotateX: y * -2.4, x: x * 5, y: y * 3, duration: .65, ease: 'power3.out', overwrite: 'auto' });
       }, { passive: true });
       hero.addEventListener('pointerleave', () => {
         hero.style.setProperty('--mx', '0');
         hero.style.setProperty('--my', '0');
+        gsap.to(name, { rotateY: 0, rotateX: 0, x: 0, y: 0, duration: .7, ease: 'power3.out', overwrite: 'auto' });
       });
     }
+  }
+
+  const reticleAnchor = document.querySelector<HTMLElement>('.runner-reticle-anchor');
+  const runnerStage = document.querySelector<HTMLElement>('.runner-stage');
+  if (hero && reticleAnchor && runnerStage) {
+    let lockedPosition: { x: number; y: number } | null = null;
+
+    const clampToHero = (x: number, y: number) => {
+      const bounds = hero.getBoundingClientRect();
+      const margin = reticleAnchor.offsetWidth / 2 + 16;
+      return {
+        x: Math.min(Math.max(x, margin), Math.max(margin, bounds.width - margin)),
+        y: Math.min(Math.max(y, margin), Math.max(margin, bounds.height - margin)),
+      };
+    };
+
+    const moveReticle = (heroX: number, heroY: number, duration: number) => {
+      const target = clampToHero(heroX, heroY);
+      const restingCenterX = reticleAnchor.offsetLeft + reticleAnchor.offsetWidth / 2;
+      const restingCenterY = reticleAnchor.offsetTop + reticleAnchor.offsetHeight / 2;
+      gsap.to(reticleAnchor, {
+        x: target.x - runnerStage.offsetLeft - restingCenterX,
+        y: target.y - runnerStage.offsetTop - restingCenterY,
+        duration: reduceMotion ? 0 : duration,
+        ease: 'power3.out',
+        overwrite: true,
+      });
+    };
+
+    if (!reduceMotion && matchMedia('(pointer: fine)').matches) {
+      hero.addEventListener('pointermove', (event) => {
+        if (lockedPosition) return;
+        const bounds = hero.getBoundingClientRect();
+        const restingBounds = reticleAnchor.getBoundingClientRect();
+        const currentX = Number(gsap.getProperty(reticleAnchor, 'x')) || 0;
+        const currentY = Number(gsap.getProperty(reticleAnchor, 'y')) || 0;
+        const restingX = restingBounds.left - bounds.left + restingBounds.width / 2 - currentX;
+        const restingY = restingBounds.top - bounds.top + restingBounds.height / 2 - currentY;
+        moveReticle(
+          restingX + (event.clientX - bounds.left - bounds.width / 2) * .02,
+          restingY + (event.clientY - bounds.top - bounds.height / 2) * .02,
+          .35,
+        );
+      }, { passive: true });
+      hero.addEventListener('pointerleave', () => {
+        if (!lockedPosition) gsap.to(reticleAnchor, { x: 0, y: 0, duration: .45, ease: 'power3.out', overwrite: true });
+      });
+    }
+
+    hero.addEventListener('pointerup', (event) => {
+      const bounds = hero.getBoundingClientRect();
+      const target = clampToHero(event.clientX - bounds.left, event.clientY - bounds.top);
+      lockedPosition = { x: target.x / bounds.width, y: target.y / bounds.height };
+      moveReticle(target.x, target.y, .7);
+    });
+
+    addEventListener('resize', () => {
+      if (!lockedPosition) {
+        gsap.set(reticleAnchor, { x: 0, y: 0 });
+        return;
+      }
+      const bounds = hero.getBoundingClientRect();
+      moveReticle(lockedPosition.x * bounds.width, lockedPosition.y * bounds.height, 0);
+    }, { passive: true });
   }
 </script>

@@ -3,26 +3,38 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageIntro from '../../../components/PageIntro.astro';
 import ProjectRow from '../../../components/ProjectRow.astro';
 import SignalBand from '../../../components/SignalBand.astro';
+import SectionNavigator from '../../../components/SectionNavigator.astro';
 import { locales, type Locale } from '../../../data/site';
 import { projects } from '../../../data/projects';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
 const lang = Astro.params.lang as Locale;
 const copy = lang === 'zh' ? {
-  title: '项目档案', eyebrow: '选择的工作', description: '一些关于机器智能、公共空间与人类注意力的合作实验。每个项目都从一个尚未被妥善回答的问题开始。', seo: '沈野的精选创意开发、AI 产品与实时图形项目。',
+  title: '项目档案', eyebrow: '选择的工作', description: '一些关于机器智能、公共空间与人类注意力的合作实验。每个项目都从一个尚未被妥善回答的问题开始。', seo: '花辞树的精选创意开发、AI 产品与实时图形项目。',
 } : {
-  title: 'Project archive', eyebrow: 'Selected work', description: 'Collaborative experiments in machine intelligence, public space, and human attention. Each begins with a question that has not yet been answered well.', seo: 'Selected creative development, AI product, and real-time graphics projects by Shen Ye.',
+  title: 'Project archive', eyebrow: 'Selected work', description: 'Collaborative experiments in machine intelligence, public space, and human attention. Each begins with a question that has not yet been answered well.', seo: 'Selected creative development, AI product, and real-time graphics projects by 花辞树.',
 };
+const sectionItems = lang === 'zh'
+  ? [{ id: 'projects-overview', label: '项目概览' }, { id: 'projects-list', label: '项目列表' }]
+  : [{ id: 'projects-overview', label: 'Overview' }, { id: 'projects-list', label: 'Project list' }];
 ---
-<BaseLayout title={`${copy.title} — ${lang === 'zh' ? '沈野' : 'Shen Ye'}`} description={copy.seo} lang={lang}>
-  <PageIntro index="01" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+<BaseLayout title={`${copy.title} — 花辞树`} description={copy.seo} lang={lang}>
+  <SectionNavigator lang={lang} items={sectionItems} />
+  <div id="projects-overview" data-section-anchor>
+    <PageIntro index="01" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+  </div>
   <SignalBand index="01" label="PROJECT / FIELD" items={projects.map((project) => project.title[lang])} />
-  <section class="projects-archive">
+  <section id="projects-list" class="projects-archive" data-section-anchor>
     <div class="container">
       {projects.map((project, i) => <ProjectRow project={project} lang={lang} position={i} />)}
     </div>
   </section>
 </BaseLayout>
 <style>
-  .projects-archive { position: relative; overflow: hidden; padding-top: clamp(35px, 6vw, 90px); }
-  .projects-archive::before { content: 'ARCHIVE / 03'; position: absolute; right: -2vw; top: 7%; color: color-mix(in srgb, var(--section-color) 9%, transparent); font: 600 clamp(90px, 18vw, 280px)/.8 'DM Mono', monospace; writing-mode: vertical-rl; pointer-events: none; }
+  .projects-archive { position: relative; overflow: hidden; padding-top: clamp(125px, 15vw, 220px); }
+  .projects-archive::before { content: 'ARCHIVE / 03'; position: absolute; z-index: 0; right: var(--pad); top: clamp(28px, 4vw, 58px); color: var(--section-color); font: 600 clamp(54px, 7.2vw, 110px)/1 'DM Mono', monospace; white-space: nowrap; opacity: .11; pointer-events: none; }
+  .projects-archive .container { position: relative; z-index: 1; }
+  @media (max-width: 760px) {
+    .projects-archive { padding-top: 50px; }
+    .projects-archive::before { display: none; }
+  }
 </style>

@@ -1,23 +1,91 @@
 ---
+import { Image } from 'astro:assets';
 import { ArrowUpRight } from 'lucide-astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageIntro from '../../components/PageIntro.astro';
+import SectionNavigator from '../../components/SectionNavigator.astro';
 import SignalBand from '../../components/SignalBand.astro';
+import avatar from '../../assets/images/about/avatar.webp.png';
 import { locales, profile, experience, type Locale } from '../../data/site';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
 const lang = Astro.params.lang as Locale;
 const p = profile[lang];
-const copy = lang === 'zh' ? { title: '关于我', eyebrow: '人物与方法', description: '我在技术可以被感知的地方工作，把抽象系统转化成清楚、克制而有生命力的体验。', now: '此刻关注', nowText: '低干扰的智能产品、生成式界面的可解释性，以及实时图形如何成为叙事材料。', skills: '能力范围', path: '工作路径', connect: '建立联系', mail: '写一封邮件' } : { title: 'About me', eyebrow: 'Person & practice', description: 'I work where technology can be felt, translating abstract systems into experiences that are clear, restrained, and alive.', now: 'Current focus', nowText: 'Low-interruption intelligence, explainability in generative interfaces, and real-time graphics as narrative material.', skills: 'Capabilities', path: 'Path so far', connect: 'Start a conversation', mail: 'Send an email' };
+const copy = lang === 'zh'
+  ? {
+      title: '关于我',
+      eyebrow: '人物与方法',
+      description: '我在技术可以被感知的地方工作，把抽象系统转化成清楚、克制而有生命力的体验。',
+      portraitAlt: `${p.name} 的个人头像插画`,
+      now: '此刻关注',
+      nowText: '低干扰的智能产品、生成式界面的可解释性，以及实时图形如何成为叙事材料。',
+      skills: '能力范围',
+      path: '工作路径',
+      connect: '建立联系',
+      mail: '写一封邮件',
+    }
+  : {
+      title: 'About me',
+      eyebrow: 'Person & practice',
+      description: 'I work where technology can be felt, translating abstract systems into experiences that are clear, restrained, and alive.',
+      portraitAlt: `Illustrated portrait of ${p.name}`,
+      now: 'Current focus',
+      nowText: 'Low-interruption intelligence, explainability in generative interfaces, and real-time graphics as narrative material.',
+      skills: 'Capabilities',
+      path: 'Path so far',
+      connect: 'Start a conversation',
+      mail: 'Send an email',
+    };
+const navigatorItems = [
+  { id: 'current-focus', label: copy.now },
+  { id: 'capabilities', label: copy.skills },
+  { id: 'work-path', label: copy.path },
+  { id: 'contact', label: copy.connect },
+];
 ---
 <BaseLayout title={`${copy.title} — ${p.name}`} description={copy.description} lang={lang}>
   <PageIntro index="03" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+  <section class="portrait-section" aria-label={copy.portraitAlt}>
+    <div class="portrait-wordmark" aria-hidden="true">
+      <div class="portrait-wordmark-track">
+        <div class="portrait-wordmark-group">
+          <span>PROFILE</span><span>PROFILE</span><span>PROFILE</span>
+        </div>
+        <div class="portrait-wordmark-group">
+          <span>PROFILE</span><span>PROFILE</span><span>PROFILE</span>
+        </div>
+      </div>
+    </div>
+    <div class="container portrait-layout" data-reveal>
+      <div class="portrait-rail" aria-hidden="true">
+        <span class="mono">PORTRAIT / 03</span>
+        <i></i>
+        <span class="mono">IDENTITY / ACTIVE</span>
+      </div>
+      <figure class="portrait-frame">
+        <Image class="portrait-image" src={avatar} alt={copy.portraitAlt} loading="lazy" quality={90} />
+      </figure>
+    </div>
+  </section>
+  <SectionNavigator lang={lang} items={navigatorItems} />
   <SignalBand index="03" label="PROFILE / OPEN" items={p.skills} />
-  <section class="about-statement section"><div class="container statement-grid" data-reveal><span class="eyebrow">{copy.now}</span><p>{copy.nowText}</p></div></section>
-  <section class="capabilities section"><div class="container"><span class="eyebrow" data-reveal>{copy.skills}</span><div class="skills-list">{p.skills.map((skill, i) => <div data-reveal><span class="mono">0{i + 1}</span><strong>{skill}</strong></div>)}</div></div></section>
-  <section class="experience section"><div class="container"><span class="eyebrow" data-reveal>{copy.path}</span><div class="timeline">{experience[lang].map((item) => <article data-reveal><time class="mono">{item.period}</time><div><h2>{item.title}</h2><p>{item.note}</p></div></article>)}</div></div></section>
-  <section class="contact-band"><div class="container"><span class="eyebrow">{copy.connect}</span><a href={`mailto:${p.email}`}><span>{copy.mail}</span><ArrowUpRight /></a><div class="contact-meta mono"><span>{p.email}</span><span>{p.location}</span></div></div></section>
+  <section id="current-focus" class="about-statement section"><div class="container statement-grid" data-reveal><span class="eyebrow">{copy.now}</span><p>{copy.nowText}</p></div></section>
+  <section id="capabilities" class="capabilities section"><div class="container"><span class="eyebrow" data-reveal>{copy.skills}</span><div class="skills-list">{p.skills.map((skill, i) => <div data-reveal><span class="mono">0{i + 1}</span><strong>{skill}</strong></div>)}</div></div></section>
+  <section id="work-path" class="experience section"><div class="container"><span class="eyebrow" data-reveal>{copy.path}</span><div class="timeline">{experience[lang].map((item) => <article data-reveal><time class="mono">{item.period}</time><div><h2>{item.title}</h2><p>{item.note}</p></div></article>)}</div></div></section>
+  <section id="contact" class="contact-band"><div class="container"><span class="eyebrow">{copy.connect}</span><a href={`mailto:${p.email}`}><span>{copy.mail}</span><ArrowUpRight /></a><div class="contact-meta mono"><span>{p.email}</span><span>{p.location}</span></div></div></section>
 </BaseLayout>
 <style>
+  .portrait-section { position: relative; overflow: hidden; padding-block: clamp(58px, 8vw, 118px); border-block: 1px solid #ffffff2e; background: #0a0a09; color: #f5f2ea; isolation: isolate; }
+  .portrait-wordmark { position: absolute; z-index: 0; inset: 50% 0 auto; overflow: hidden; color: color-mix(in srgb, var(--section-color) 12%, transparent); transform: translateY(-50%); pointer-events: none; }
+  .portrait-wordmark-track { display: flex; width: max-content; will-change: transform; animation: portrait-titles 30s linear infinite; }
+  .portrait-wordmark-group { display: flex; flex: none; }
+  .portrait-wordmark span { flex: none; padding-inline: clamp(45px, 6vw, 110px); font: 600 clamp(100px, 20vw, 310px)/.72 'DM Mono', monospace; white-space: nowrap; }
+  .portrait-layout { position: relative; z-index: 1; display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: clamp(22px, 4vw, 64px); align-items: stretch; }
+  .portrait-rail { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 18px; min-height: 0; padding: 16px 0; border: 1px solid var(--section-color); background: var(--section-color); color: #0a0a09; writing-mode: vertical-rl; transform: rotate(180deg); }
+  .portrait-rail i { flex: 1; width: 1px; min-height: 40px; background: #0a0a09; opacity: .6; }
+  .portrait-frame { position: relative; width: min(100%, 820px); margin: 0 18px 18px auto; border: 1px solid #ffffff4a; background: #050505; box-shadow: 18px 18px 0 var(--section-color); transform: rotate(-.45deg); }
+  .portrait-frame::after { content: ''; position: absolute; inset: 12px; border: 1px solid #ffffff36; pointer-events: none; }
+  .portrait-image { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
+  #current-focus, #capabilities, #work-path, #contact { scroll-margin-top: calc(var(--header-h) + 24px); }
   .statement-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 50px; }
   .about-statement { overflow: hidden; }
   .about-statement::after { content: 'NOW'; position: absolute; z-index: -1; right: -2vw; bottom: -5vw; color: color-mix(in srgb, var(--section-color) 13%, transparent); font: 600 clamp(120px, 28vw, 430px)/.7 'DM Mono', monospace; transform: translateX(calc(var(--pointer-x) * -16px)); }
@@ -42,6 +110,27 @@ const copy = lang === 'zh' ? { title: '关于我', eyebrow: '人物与方法', d
   .contact-band a { display: flex; justify-content: space-between; align-items: center; gap: 30px; margin-block: 50px; padding-bottom: 20px; border-bottom: 2px solid #fff; font-size: clamp(38px, 5.5vw, 80px); line-height: var(--title-line-height); letter-spacing: var(--title-letter-spacing); font-weight: 600; overflow-wrap: break-word; }
   .contact-band a svg { flex: 0 0 auto; width: clamp(35px, 6vw, 80px); height: auto; }
   .contact-meta { display: flex; justify-content: space-between; }
+  @keyframes portrait-titles { to { transform: translateX(-50%); } }
   @keyframes contact-drift { to { transform: translateX(-36px); } }
-  @media (max-width: 720px) { .statement-grid { grid-template-columns: 1fr; } .statement-grid p { font-size: clamp(28px, 9vw, 40px); } .timeline { margin-left: 4px; } .timeline article { grid-template-columns: 1fr; gap: 15px; padding-left: 28px; } .contact-band a { gap: 16px; font-size: clamp(34px, 11vw, 48px); } .contact-meta { flex-direction: column; gap: 10px; overflow-wrap: anywhere; } }
+  @media (max-width: 720px) {
+    .portrait-section { padding-block: 42px 54px; }
+    .portrait-layout { grid-template-columns: 1fr; gap: 18px; }
+    .portrait-rail { flex-direction: row; min-height: 44px; padding: 0 14px; writing-mode: initial; transform: none; }
+    .portrait-rail i { width: auto; min-width: 30px; min-height: 1px; height: 1px; }
+    .portrait-frame { width: calc(100% - 10px); margin: 0 10px 10px 0; box-shadow: 10px 10px 0 var(--section-color); transform: none; }
+    .portrait-frame::after { inset: 7px; }
+    .statement-grid { grid-template-columns: 1fr; }
+    .statement-grid p { font-size: clamp(28px, 9vw, 40px); }
+    .timeline { margin-left: 4px; }
+    .timeline article { grid-template-columns: 1fr; gap: 15px; padding-left: 28px; }
+    .contact-band a { gap: 16px; font-size: clamp(34px, 11vw, 48px); }
+    .contact-meta { flex-direction: column; gap: 10px; overflow-wrap: anywhere; }
+  }
+  @media (prefers-color-scheme: dark) {
+    .portrait-section { border-block-color: #ffffff24; background: #050505; }
+    .portrait-frame { border-color: #ffffff52; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .portrait-wordmark-track { animation: none; }
+  }
 </style>

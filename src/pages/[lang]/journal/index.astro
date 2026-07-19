@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageIntro from '../../../components/PageIntro.astro';
 import SignalBand from '../../../components/SignalBand.astro';
+import SectionNavigator from '../../../components/SectionNavigator.astro';
 import { locales, type Locale } from '../../../data/site';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
 const lang = Astro.params.lang as Locale;
@@ -12,11 +13,17 @@ const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
 const copy = lang === 'zh' ? { title: '观察与笔记', eyebrow: '文章索引', description: '关于智能界面、实时媒介，以及技术如何改变我们的感知方式。', all: '全部', min: '分钟', empty: '没有匹配的文章。' } : { title: 'Observations & notes', eyebrow: 'Journal index', description: 'On intelligent interfaces, real-time media, and how technology changes the way we perceive.', all: 'All', min: 'min read', empty: 'No writing matches this filter.' };
 const format = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
 const readingTime = (body: string) => Math.max(2, Math.ceil(body.trim().split(/\s+|(?=[\u4e00-\u9fff])/).length / (lang === 'zh' ? 350 : 220)));
+const sectionItems = lang === 'zh'
+  ? [{ id: 'journal-overview', label: '写作概览' }, { id: 'journal-list', label: '文章列表' }]
+  : [{ id: 'journal-overview', label: 'Overview' }, { id: 'journal-list', label: 'Writing list' }];
 ---
-<BaseLayout title={`${copy.title} — ${lang === 'zh' ? '沈野' : 'Shen Ye'}`} description={copy.description} lang={lang}>
-  <PageIntro index="02" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+<BaseLayout title={`${copy.title} — 花辞树`} description={copy.description} lang={lang}>
+  <SectionNavigator lang={lang} items={sectionItems} />
+  <div id="journal-overview" data-section-anchor>
+    <PageIntro index="02" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+  </div>
   <SignalBand index="02" label="JOURNAL / FEED" items={tags} />
-  <section class="journal-index section">
+  <section id="journal-list" class="journal-index section" data-section-anchor>
     <div class="container">
       <div class="tag-filters" role="group" aria-label={lang === 'zh' ? '按标签筛选' : 'Filter by tag'}>
         <button class="tag-filter active" data-tag="all">{copy.all}</button>

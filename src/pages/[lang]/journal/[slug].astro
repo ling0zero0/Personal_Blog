@@ -2,6 +2,7 @@
 import { ArrowLeft, ArrowUpRight } from 'lucide-astro';
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
+import SectionNavigator from '../../../components/SectionNavigator.astro';
 import type { Locale } from '../../../data/site';
 const allPosts = await getCollection('blog', ({ data }) => !data.draft);
 export async function getStaticPaths() {
@@ -15,9 +16,13 @@ const siblings = allPosts.filter((item) => item.data.lang === lang && item.id !=
 const format = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
 const words = (post.body || '').trim().split(/\s+|(?=[\u4e00-\u9fff])/).length;
 const minutes = Math.max(2, Math.ceil(words / (lang === 'zh' ? 350 : 220)));
-const copy = lang === 'zh' ? { back: '全部文章', min: '分钟阅读', toc: '本页目录', related: '继续阅读', progress: '阅读进度' } : { back: 'All writing', min: 'min read', toc: 'On this page', related: 'Continue reading', progress: 'Reading progress' };
+const copy = lang === 'zh' ? { back: '全部文章', min: '分钟阅读', related: '继续阅读', progress: '阅读进度' } : { back: 'All writing', min: 'min read', related: 'Continue reading', progress: 'Reading progress' };
+const sectionItems = headings
+  .filter((heading) => heading.depth >= 2 && heading.depth <= 3)
+  .map((heading) => ({ id: heading.slug, label: heading.text, depth: heading.depth }));
 ---
-<BaseLayout title={`${post.data.title} — ${lang === 'zh' ? '沈野' : 'Shen Ye'}`} description={post.data.description} lang={lang}>
+<BaseLayout title={`${post.data.title} — 花辞树`} description={post.data.description} lang={lang}>
+  <SectionNavigator lang={lang} items={sectionItems} />
   <div class="reading-progress" role="progressbar" aria-label={copy.progress} aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
   <article class="article-shell">
     <header class="article-header" data-reveal-group>
@@ -35,10 +40,6 @@ const copy = lang === 'zh' ? { back: '全部文章', min: '分钟阅读', toc: '
       </div>
     </header>
     <div class="article-layout container">
-      <aside class="toc">
-        <div class="mono muted">{copy.toc}</div>
-        <nav>{headings.filter((h) => h.depth <= 3).map((heading) => <a class:list={[`depth-${heading.depth}`]} href={`#${heading.slug}`}>{heading.text}</a>)}</nav>
-      </aside>
       <div class="prose"><Content /></div>
     </div>
   </article>
@@ -65,14 +66,9 @@ const copy = lang === 'zh' ? { back: '全部文章', min: '分钟阅读', toc: '
   .article-header h1::before { content: 'HEADLINE'; position: absolute; top: -24px; left: 0; padding: 5px 9px; background: #f7f4ea; color: #0b0c0c; font: 10px/1 'DM Mono', monospace; letter-spacing: .08em; text-shadow: none; }
   .article-header .front-page > p { position: relative; z-index: 4; grid-column: 7 / -1; grid-row: 4; margin: 0 0 24px; padding: 24px 26px; border: 4px solid #0b0c0c; outline: 1px solid #f7f4ea; background: var(--section-color); color: #07100e; font-size: clamp(19px, 2vw, 29px); line-height: 1.3; font-weight: 550; transform: rotate(-1.2deg); box-shadow: 12px 12px 0 #f7f4ea; }
   .panel-mark { grid-column: 1 / 4; grid-row: 4; align-self: end; padding-left: 14px; border-left: 8px solid var(--section-color); color: #ffffff99; line-height: 1.65; }
-  .article-layout { position: relative; display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 720px) minmax(80px, 1fr); gap: 55px; padding-top: clamp(90px, 11vw, 160px); padding-bottom: 150px; background: var(--bg); }
+  .article-layout { position: relative; display: grid; grid-template-columns: minmax(0, 720px); justify-content: center; padding-top: clamp(90px, 11vw, 160px); padding-bottom: 150px; background: var(--bg); }
   .article-layout::before { content: 'ARTICLE / BODY'; position: absolute; top: 28px; left: var(--pad); color: var(--muted); font: 11px/1 'DM Mono', monospace; letter-spacing: .08em; }
-  .toc { position: sticky; top: 110px; align-self: start; }
-  .toc nav { display: grid; gap: 12px; margin-top: 25px; }
-  .toc a { font-size: 12px; line-height: 1.4; color: var(--muted); }
-  .toc a.active { color: var(--accent); }
-  .toc .depth-3 { padding-left: 14px; }
-  .prose { grid-column: 2; width: 100%; font-family: Georgia, 'Noto Sans SC', serif; font-size: 19px; overflow-wrap: break-word; word-break: normal; }
+  .prose { width: 100%; font-family: Georgia, 'Noto Sans SC', serif; font-size: 19px; overflow-wrap: break-word; word-break: normal; }
   html[lang='zh'] .prose { max-width: 720px; line-height: 1.82; }
   html[lang='en'] .prose { max-width: 680px; line-height: 1.72; }
   .prose > :first-child { margin-top: 0; }
@@ -91,9 +87,6 @@ const copy = lang === 'zh' ? { back: '全部文章', min: '分钟阅读', toc: '
   @media (max-width: 900px) {
     .article-header h1 { grid-column: 1 / -1; }
     .article-header .front-page > p { grid-column: 5 / -1; }
-    .article-layout { grid-template-columns: 1fr; }
-    .toc { position: static; padding-bottom: 30px; border-bottom: 1px solid var(--line); }
-    .prose { grid-column: 1; }
   }
   @media (max-width: 620px) {
     .front-page { min-height: 100svh; padding-top: calc(var(--header-h) + 18px); padding-bottom: 76px; display: flex; flex-direction: column; gap: 10px; }
@@ -118,7 +111,6 @@ const copy = lang === 'zh' ? { back: '全部文章', min: '分钟阅读', toc: '
 </style>
 <script>
   const progress = document.querySelector<HTMLElement>('.reading-progress span'); const progressRoot = document.querySelector<HTMLElement>('.reading-progress');
-  const headings = [...document.querySelectorAll<HTMLElement>('.prose h2, .prose h3')]; const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
-  function updateReading() { const article = document.querySelector<HTMLElement>('.article-shell'); if (!article || !progress) return; const start = article.offsetTop; const total = article.offsetHeight - innerHeight; const value = Math.max(0, Math.min(1, (scrollY - start) / total)); progress.style.transform = `scaleX(${value})`; progressRoot?.setAttribute('aria-valuenow', String(Math.round(value * 100))); let current = ''; headings.forEach((h) => { if (h.getBoundingClientRect().top < 180) current = h.id; }); tocLinks.forEach((link) => link.classList.toggle('active', link.hash === `#${current}`)); }
+  function updateReading() { const article = document.querySelector<HTMLElement>('.article-shell'); if (!article || !progress) return; const start = article.offsetTop; const total = article.offsetHeight - innerHeight; const value = Math.max(0, Math.min(1, (scrollY - start) / total)); progress.style.transform = `scaleX(${value})`; progressRoot?.setAttribute('aria-valuenow', String(Math.round(value * 100))); }
   addEventListener('scroll', updateReading, { passive: true }); updateReading();
 </script>

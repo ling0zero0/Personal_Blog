@@ -1,0 +1,319 @@
+---
+import { PanelRightClose, PanelRightOpen } from 'lucide-astro';
+
+interface NavigatorItem {
+  id: string;
+  label: string;
+  depth?: number;
+}
+
+interface Props {
+  lang: 'zh' | 'en';
+  items: NavigatorItem[];
+}
+
+const { lang, items } = Astro.props;
+const instanceId = `section-navigator-${crypto.randomUUID()}`;
+const panelId = `${instanceId}-panel`;
+const copy = lang === 'zh'
+  ? { nav: '本页目录', open: '展开本页目录', close: '收起本页目录' }
+  : { nav: 'On this page', open: 'Expand page sections', close: 'Collapse page sections' };
+---
+
+{items.length > 0 && (
+  <nav
+    class="section-navigator"
+    id={instanceId}
+    aria-label={copy.nav}
+    data-section-navigator
+    data-collapsed="true"
+    data-open-label={copy.open}
+    data-close-label={copy.close}
+  >
+    <button
+      class="section-navigator__toggle"
+      type="button"
+      aria-controls={panelId}
+      aria-expanded="false"
+      aria-label={copy.open}
+      title={copy.open}
+    >
+      <PanelRightClose class="section-navigator__close-icon" aria-hidden="true" size={18} stroke-width={1.8} />
+      <PanelRightOpen class="section-navigator__open-icon" aria-hidden="true" size={18} stroke-width={1.8} />
+    </button>
+
+    <div class="section-navigator__panel" id={panelId}>
+      <div class="section-navigator__heading" aria-hidden="true">{copy.nav}</div>
+      <ol class="section-navigator__list">
+        {items.map((item, index) => (
+          <li>
+            <a
+              class:list={['section-navigator__link', item.depth && `depth-${item.depth}`]}
+              href={`#${encodeURIComponent(item.id)}`}
+              data-section-id={item.id}
+            >
+              <span class="section-navigator__index" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+              <span>{item.label}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </nav>
+)}
+
+<script>
+  const mobileQuery = window.matchMedia('(max-width: 760px)');
+  const navigatorCleanups = new Map<HTMLElement, () => void>();
+
+  function initializeSectionNavigator(navigator: HTMLElement) {
+    if (navigatorCleanups.has(navigator)) return;
+
+    const toggle = navigator.querySelector<HTMLButtonElement>('.section-navigator__toggle');
+    const panel = navigator.querySelector<HTMLElement>('.section-navigator__panel');
+    const links = Array.from(navigator.querySelectorAll<HTMLAnchorElement>('.section-navigator__link'));
+    if (!toggle || !panel || links.length === 0) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    const sections = links.map((link) => document.getElementById(link.dataset.sectionId ?? ''));
+    const openLabel = navigator.dataset.openLabel ?? 'Expand page sections';
+    const closeLabel = navigator.dataset.closeLabel ?? 'Collapse page sections';
+    let collapsed = true;
+    let frame = 0;
+
+    const setCollapsed = (nextCollapsed: boolean) => {
+      collapsed = nextCollapsed;
+      navigator.dataset.collapsed = String(collapsed);
+      navigator.dataset.ready = 'true';
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('aria-label', collapsed ? openLabel : closeLabel);
+      toggle.title = collapsed ? openLabel : closeLabel;
+      panel.setAttribute('aria-hidden', String(collapsed));
+      panel.toggleAttribute('inert', collapsed);
+
+      if (collapsed && panel.contains(document.activeElement)) toggle.focus();
+    };
+
+    const setActive = (activeIndex: number) => {
+      links.forEach((link, index) => {
+        const isActive = index === activeIndex;
+        link.classList.toggle('is-active', isActive);
+        if (isActive) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+    };
+
+    const updateActiveSection = () => {
+      frame = 0;
+      const headerHeight = document.querySelector<HTMLElement>('.site-header')?.offsetHeight ?? 0;
+      const marker = headerHeight + Math.min(window.innerHeight * 0.25, 220);
+      let activeIndex = sections.findIndex((section) => section !== null);
+
+      sections.forEach((section, index) => {
+        if (section && section.getBoundingClientRect().top <= marker) activeIndex = index;
+      });
+
+      const isAtPageEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      if (isAtPageEnd) {
+        for (let index = sections.length - 1; index >= 0; index -= 1) {
+          if (sections[index]) {
+            activeIndex = index;
+            break;
+          }
+        }
+      }
+
+      if (activeIndex >= 0) setActive(activeIndex);
+    };
+
+    const queueActiveUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateActiveSection);
+    };
+
+    toggle.addEventListener('click', () => setCollapsed(!collapsed), { signal });
+
+    navigator.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !collapsed) {
+        event.preventDefault();
+        setCollapsed(true);
+        toggle.focus();
+        return;
+      }
+
+      const currentIndex = links.indexOf(document.activeElement as HTMLAnchorElement);
+      if (currentIndex < 0) return;
+
+      let nextIndex = -1;
+      if (event.key === 'ArrowDown') nextIndex = (currentIndex + 1) % links.length;
+      if (event.key === 'ArrowUp') nextIndex = (currentIndex - 1 + links.length) % links.length;
+      if (event.key === 'Home') nextIndex = 0;
+      if (event.key === 'End') nextIndex = links.length - 1;
+      if (nextIndex < 0) return;
+
+      event.preventDefault();
+      links[nextIndex].focus();
+    }, { signal });
+
+    links.forEach((link, index) => {
+      link.addEventListener('click', () => {
+        setActive(index);
+        if (mobileQuery.matches) setCollapsed(true);
+      }, { signal });
+    });
+
+    window.addEventListener('hashchange', queueActiveUpdate, { passive: true, signal });
+    window.addEventListener('scroll', queueActiveUpdate, { passive: true, signal });
+    window.addEventListener('resize', queueActiveUpdate, { passive: true, signal });
+
+    const cleanup = () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      controller.abort();
+      navigatorCleanups.delete(navigator);
+    };
+
+    navigatorCleanups.set(navigator, cleanup);
+    setCollapsed(collapsed);
+    updateActiveSection();
+  }
+
+  function initializeSectionNavigators() {
+    document.querySelectorAll<HTMLElement>('[data-section-navigator]').forEach(initializeSectionNavigator);
+  }
+
+  initializeSectionNavigators();
+  document.addEventListener('astro:page-load', initializeSectionNavigators);
+  document.addEventListener('astro:before-swap', () => {
+    navigatorCleanups.forEach((cleanup) => cleanup());
+  });
+</script>
+
+<style>
+  .section-navigator {
+    position: fixed;
+    z-index: 65;
+    top: 50%;
+    right: clamp(12px, 2vw, 30px);
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    width: min(292px, calc(100vw - 32px));
+    max-height: min(70vh, 560px);
+    overflow: hidden;
+    color: var(--ink);
+    background: color-mix(in srgb, var(--surface) 94%, transparent);
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 32px color-mix(in srgb, #000 14%, transparent);
+    transform: translateY(-50%);
+    transition: width .25s var(--ease), background-color .25s var(--ease), box-shadow .25s var(--ease);
+    isolation: isolate;
+  }
+
+  .section-navigator:hover,
+  .section-navigator:focus-within {
+    background: color-mix(in srgb, var(--surface) 98%, transparent);
+    box-shadow: 0 16px 42px color-mix(in srgb, #000 20%, transparent);
+  }
+
+  .section-navigator[data-collapsed='true'] {
+    width: 40px;
+    max-height: 40px;
+  }
+
+  .section-navigator__toggle {
+    display: grid;
+    place-items: center;
+    align-self: start;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-right: 1px solid var(--line);
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .section-navigator[data-collapsed='true'] .section-navigator__toggle { border-right-color: transparent; }
+  .section-navigator__open-icon { display: none; }
+  .section-navigator[data-collapsed='true'] .section-navigator__close-icon { display: none; }
+  .section-navigator[data-collapsed='true'] .section-navigator__open-icon { display: block; }
+
+  .section-navigator__panel {
+    min-width: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: 13px 14px 14px;
+    opacity: 1;
+    transition: opacity .18s ease;
+  }
+
+  .section-navigator[data-collapsed='true'] .section-navigator__panel {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .section-navigator__heading {
+    margin-bottom: 10px;
+    color: var(--muted);
+    font: 500 10px/1.2 'DM Mono', 'Noto Sans SC', monospace;
+    text-transform: uppercase;
+  }
+
+  .section-navigator__list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .section-navigator__link {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 7px;
+    align-items: baseline;
+    min-height: 34px;
+    padding: 8px 6px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    transition: color .18s ease, background-color .18s ease;
+  }
+
+  .section-navigator__link.depth-3 { padding-left: 16px; }
+  .section-navigator__link:hover { color: var(--ink); }
+  .section-navigator__link.is-active {
+    color: var(--ink);
+    background: color-mix(in srgb, var(--section-color) 12%, transparent);
+    box-shadow: inset 3px 0 var(--section-color);
+  }
+
+  .section-navigator__index {
+    color: var(--muted);
+    font: 10px/1 'DM Mono', monospace;
+  }
+
+  @media (max-width: 760px) {
+    .section-navigator {
+      top: calc(var(--header-h) + 8px);
+      right: max(8px, env(safe-area-inset-right));
+      width: min(260px, calc(100vw - 16px));
+      max-height: calc(100svh - var(--header-h) - 16px);
+      transform: none;
+      box-shadow: 0 8px 24px color-mix(in srgb, #000 16%, transparent);
+    }
+
+    .section-navigator[data-collapsed='true'] { width: 40px; }
+    .section-navigator__panel { padding-block: 10px; }
+    .section-navigator__heading { margin-bottom: 6px; }
+    .section-navigator__link { min-height: 32px; padding-block: 7px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .section-navigator,
+    .section-navigator__panel,
+    .section-navigator__link { transition: none; }
+  }
+</style>

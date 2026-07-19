@@ -9,8 +9,8 @@ const currentSegment = path.split('/')[2] || '';
 const switchPath = `/${lang === 'zh' ? 'en' : 'zh'}/${path.split('/').slice(2).join('/')}`;
 ---
 <header class="site-header">
-  <a class="brand" href={`/${lang}/`} aria-label={lang === 'zh' ? '沈野首页' : 'Shen Ye home'}>
-    <span class="brand-mark"></span><span>{lang === 'zh' ? '沈野' : 'SHEN YE'}</span>
+  <a class="brand" href={`/${lang}/`} aria-label={lang === 'zh' ? '花辞树首页' : '花辞树 home'}>
+    <span class="brand-mark"></span><span>花辞树</span>
   </a>
   <nav class="desktop-nav" aria-label={lang === 'zh' ? '主导航' : 'Primary navigation'}>
     {t.nav.map((label, index) => <a href={`/${lang}/${t.navPaths[index]}`} aria-current={currentSegment === t.navPaths[index] ? 'page' : undefined}>{label}</a>)}

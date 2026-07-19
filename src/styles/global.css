@@ -9,7 +9,7 @@
   --line: #ccccc5;
   --accent: #f04423;
   --green: #0b866d;
-  --yellow: #c79200;
+  --scarlet: #ed1c24;
   --blue: #3887a6;
   --paper: #f5f2ea;
   --section-color: var(--accent);
@@ -48,7 +48,7 @@
     --line: #373734;
     --accent: #ff5a38;
     --green: #44bfa0;
-    --yellow: #e0b534;
+    --scarlet: #ff3b43;
   }
 }
 
@@ -58,7 +58,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); min-width: 320px; ov
 body[data-lang='en'] { --title-line-height: .96; --title-letter-spacing: -.035em; --hero-line-height: .92; --hero-letter-spacing: -.045em; }
 body[data-lang='zh'] { --title-line-height: 1.12; --title-letter-spacing: .01em; --hero-line-height: 1.08; --hero-letter-spacing: .015em; }
 body[data-section='journal'] { --section-color: var(--blue); }
-body[data-section='about'] { --section-color: var(--yellow); }
+body[data-section='about'] { --section-color: var(--scarlet); }
 body[data-section='projects'] { --section-color: var(--green); }
 body.no-scroll { overflow: hidden; }
 ::selection { background: var(--accent); color: #fff; }

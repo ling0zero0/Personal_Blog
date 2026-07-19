@@ -42,7 +42,7 @@ test('home hero exposes the signal runner without clipping core copy', async ({ 
   await expect(page.locator('.runner-stage')).toBeVisible();
   await expect(page.locator('.runner-character')).toBeVisible();
   await expect(page.locator('.runner-label')).toContainText('数据分身');
-  await expect(page.locator('.hero-main h1')).toContainText('沈野');
+  await expect(page.locator('.hero-main h1')).toContainText('花辞树');
   await expect(page.locator('.hero-main p')).toBeVisible();
   await expectNoOverflow(page);
 
@@ -91,4 +91,34 @@ test('mobile menu is usable', async ({ page, isMobile }) => {
   await expect(page.locator('.mobile-menu nav a').first()).toBeVisible();
   await page.locator('.mobile-menu nav a').filter({ hasText: 'About' }).click();
   await page.waitForURL('**/en/about');
+});
+
+test('about portrait and floating section navigation are usable', async ({ page, isMobile }) => {
+  await page.goto('/zh/about', { waitUntil: 'networkidle' });
+
+  const portrait = page.locator('.portrait-image');
+  const navigator = page.locator('[data-section-navigator]');
+  const toggle = navigator.locator('.section-navigator__toggle');
+
+  await portrait.scrollIntoViewIfNeeded();
+  await expect(portrait).toBeVisible();
+  await expect(page.locator('.portrait-wordmark-group')).toHaveCount(2);
+  await expect(navigator).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+  await toggle.click();
+  await navigator.locator('a[href="#capabilities"]').click();
+  await expect(page).toHaveURL(/#capabilities$/);
+  await expect(page.locator('#capabilities')).toBeInViewport();
+  await expect(toggle).toHaveAttribute('aria-expanded', isMobile ? 'false' : 'true');
+  await expectNoOverflow(page);
+});
+
+test('journal detail uses the collapsible heading navigator without a duplicate toc', async ({ page }) => {
+  await page.goto('/zh/journal/seeing-the-model', { waitUntil: 'networkidle' });
+  await expect(page.locator('[data-section-navigator] .section-navigator__toggle')).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('[data-section-navigator] .section-navigator__link')).toHaveCount(
+    await page.locator('.prose h2, .prose h3').count(),
+  );
+  await expect(page.locator('.toc')).toHaveCount(0);
 });

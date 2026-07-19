@@ -17,13 +17,13 @@ export const ui = {
 
 export const profile = {
   zh: {
-    name: '沈野', role: '创意开发者 / AI 产品设计师', statement: '在代码、叙事与机器智能的交界处，构建有感知的数字体验。',
+    name: '花辞树', role: '创意开发者 / AI 产品设计师', statement: '在代码、叙事与机器智能的交界处，构建有感知的数字体验。',
     intro: '我关注复杂技术如何变得可见、可用，也值得被记住。工作横跨生成式界面、实时图形与智能产品原型。',
     location: '上海 / 远程', email: 'hello@shenye.space',
     skills: ['创意开发', '交互设计', '生成式 AI', '实时图形', '产品原型', '技术叙事'],
   },
   en: {
-    name: 'Shen Ye', role: 'Creative Developer / AI Product Designer', statement: 'Building perceptive digital experiences where code, narrative, and machine intelligence meet.',
+    name: '花辞树', role: 'Creative Developer / AI Product Designer', statement: 'Building perceptive digital experiences where code, narrative, and machine intelligence meet.',
     intro: 'I explore how complex technology can become visible, useful, and memorable through generative interfaces, real-time graphics, and intelligent product prototypes.',
     location: 'Shanghai / Remote', email: 'hello@shenye.space',
     skills: ['Creative development', 'Interaction design', 'Generative AI', 'Real-time graphics', 'Product prototyping', 'Technical narrative'],

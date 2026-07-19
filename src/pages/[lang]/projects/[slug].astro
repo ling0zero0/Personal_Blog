@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowUpRight } from 'lucide-astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import ProjectVisual from '../../../components/ProjectVisual.astro';
 import ArrowLink from '../../../components/ArrowLink.astro';
+import SectionNavigator from '../../../components/SectionNavigator.astro';
 import { locales, type Locale } from '../../../data/site';
 import { projects } from '../../../data/projects';
 export function getStaticPaths() { return locales.flatMap((lang) => projects.map((project) => ({ params: { lang, slug: project.slug }, props: { project } }))); }
@@ -11,9 +12,21 @@ const { project } = Astro.props;
 const projectIndex = projects.findIndex((item) => item.slug === project.slug);
 const next = projects[(projectIndex + 1) % projects.length];
 const copy = lang === 'zh' ? { back: '全部项目', context: '项目背景', role: '我的角色', outcome: '结果', visit: '访问项目', next: '下一个项目', prompt: '继续探索' } : { back: 'All projects', context: 'Context', role: 'My role', outcome: 'Outcome', visit: 'Visit project', next: 'Next project', prompt: 'Keep exploring' };
+const sectionItems = lang === 'zh'
+  ? [
+      { id: 'project-overview', label: '概览' },
+      { id: 'project-context', label: '项目背景' },
+      { id: 'next-project', label: '下一个项目' },
+    ]
+  : [
+      { id: 'project-overview', label: 'Overview' },
+      { id: 'project-context', label: 'Project background' },
+      { id: 'next-project', label: 'Next project' },
+    ];
 ---
-<BaseLayout title={`${project.title[lang]} — ${lang === 'zh' ? '沈野' : 'Shen Ye'}`} description={project.description[lang]} lang={lang}>
-  <header class="project-hero" data-file={`FILE / ${project.index}`}>
+<BaseLayout title={`${project.title[lang]} — 花辞树`} description={project.description[lang]} lang={lang}>
+  <SectionNavigator lang={lang} items={sectionItems} />
+  <header id="project-overview" class="project-hero" data-file={`FILE / ${project.index}`} data-section-anchor>
     <div class="project-stage container">
       <div class="stage-topline">
         <a class="back-link mono" href={`/${lang}/projects`}><ArrowLeft size={14} />{copy.back}</a>
@@ -30,7 +43,7 @@ const copy = lang === 'zh' ? { back: '全部项目', context: '项目背景', ro
       <span class="stage-axis mono" aria-hidden="true">CASE STUDY / {project.index}</span>
     </div>
   </header>
-  <section class="project-story section">
+  <section id="project-context" class="project-story section" data-section-anchor>
     <div class="container story-grid" data-reveal>
       <span class="eyebrow">{copy.context}</span>
       <div class="story-main">
@@ -43,7 +56,7 @@ const copy = lang === 'zh' ? { back: '全部项目', context: '项目背景', ro
       </div>
     </div>
   </section>
-  <a class="next-project" href={`/${lang}/projects/${next.slug}`} data-reveal>
+  <a id="next-project" class="next-project" href={`/${lang}/projects/${next.slug}`} data-reveal data-section-anchor>
     <div class="container next-inner">
       <div><span class="eyebrow">{copy.prompt} / {copy.next}</span><h2>{next.title[lang]}</h2></div>
       <ArrowUpRight size={48} />

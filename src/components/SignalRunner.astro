@@ -7,7 +7,7 @@
     <span class="panel-target"></span>
   </div>
 
-  <div class="data-ribbon ribbon-a"><span>SHENYE // SIGNAL ACQUIRED //</span></div>
+  <div class="data-ribbon ribbon-a"><span>HUACISHU // SIGNAL ACQUIRED //</span></div>
   <div class="data-ribbon ribbon-b"><span>CREATIVE SYSTEM / ONLINE</span></div>
 
   <div class="runner-character">
@@ -18,7 +18,7 @@
       <span class="torso-panel"></span>
       <span class="torso-seam seam-a"></span>
       <span class="torso-seam seam-b"></span>
-      <span class="torso-code mono">SY<br />31°N</span>
+      <span class="torso-code mono">HCS<br />31°N</span>
     </div>
     <div class="neck"></div>
     <div class="head">
@@ -47,7 +47,9 @@
   <div class="impact-lines">
     <span></span><span></span><span></span><span></span><span></span>
   </div>
-  <div class="runner-reticle"><span></span></div>
+  <div class="runner-reticle-anchor">
+    <div class="runner-reticle"><span></span></div>
+  </div>
   <div class="runner-tag mono"><b>LIVE</b><span>PARALLAX<br />SUBJECT 001</span></div>
 </div>
 
@@ -225,7 +227,8 @@
   .impact-lines span:nth-child(3) { --w: 75%; --r: 5deg; --line: 2; top: 49%; background: var(--orange); }
   .impact-lines span:nth-child(4) { --w: 52%; --r: 18deg; --line: 3; top: 68%; }
   .impact-lines span:nth-child(5) { --w: 82%; --r: 29deg; --line: 4; top: 88%; }
-  .runner-reticle { position: absolute; z-index: 8; top: 17%; left: 5%; width: 88px; aspect-ratio: 1; border: 1px solid var(--cream); border-radius: 50%; transform: translate3d(calc(var(--mx, 0) * 13px), calc(var(--my, 0) * 8px), 90px); }
+  .runner-reticle-anchor { position: absolute; z-index: 8; top: 17%; left: 5%; width: 88px; aspect-ratio: 1; pointer-events: none; will-change: transform; }
+  .runner-reticle { position: absolute; inset: 0; border: 1px solid var(--cream); border-radius: 50%; pointer-events: none; }
   .runner-reticle::before, .runner-reticle::after { content: ''; position: absolute; top: 50%; left: 50%; background: var(--orange); transform: translate(-50%, -50%); }
   .runner-reticle::before { width: 125%; height: 2px; } .runner-reticle::after { width: 2px; height: 125%; }
   .runner-reticle span { position: absolute; inset: 20%; border: 1px solid var(--cream); border-radius: 50%; }
@@ -240,7 +243,7 @@
   @media (max-width: 1000px) {
     .runner-stage { right: -7vw; width: 72vw; }
     .runner-character { right: 1%; }
-    .runner-reticle, .runner-tag { display: none; }
+    .runner-reticle-anchor, .runner-tag { display: none; }
   }
   @media (max-width: 760px) {
     .runner-stage { top: 18%; right: -20%; width: 110%; height: 64%; min-height: 420px; perspective: none; }
@@ -262,6 +265,6 @@
     .ribbon-b { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .runner-panel, .runner-character, .impact-lines, .front-arm, .runner-reticle, .impact-lines span { transform: none; transition: none; animation: none; }
+    .runner-panel, .runner-character, .impact-lines, .front-arm, .runner-reticle-anchor, .runner-reticle, .impact-lines span { transform: none; transition: none; animation: none; }
   }
 </style>
