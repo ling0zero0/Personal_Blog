@@ -6,7 +6,7 @@ async function expectNoOverflow(page: Page) {
 }
 
 test.describe('core pages', () => {
-  for (const route of ['/zh/', '/en/', '/zh/projects', '/zh/projects/w-sha', '/zh/projects/jump-pro-max', '/en/journal', '/zh/about', '/zh/journal/seeing-the-model']) {
+  for (const route of ['/zh/', '/en/', '/zh/projects', '/zh/projects/w-sha', '/zh/projects/jump-pro-max', '/zh/projects/bci-medical-imaging', '/en/journal', '/zh/about', '/zh/journal/seeing-the-model']) {
     test(`${route} renders without layout overflow`, async ({ page }) => {
       const errors: string[] = [];
       page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
@@ -21,6 +21,7 @@ test.describe('core pages', () => {
 for (const project of [
   { slug: 'w-sha', slideCount: 7 },
   { slug: 'jump-pro-max', slideCount: 6 },
+  { slug: 'bci-medical-imaging', slideCount: 5 },
 ]) {
   test(`${project.slug} uses a fixed archive poster and an interactive detail carousel`, async ({ page }) => {
     await page.goto('/zh/projects', { waitUntil: 'networkidle' });
@@ -43,18 +44,16 @@ for (const project of [
 test('project archive follows manifest order and generates display indices', async ({ page }) => {
   await page.goto('/zh/projects', { waitUntil: 'networkidle' });
   const projectRows = page.locator('[data-project]');
-  await expect(projectRows).toHaveCount(5);
+  await expect(projectRows).toHaveCount(3);
   const slugs = await projectRows.evaluateAll((rows) => rows.map((row) => row.getAttribute('data-project')));
   expect(slugs).toEqual([
     'w-sha',
     'jump-pro-max',
-    'latent-atlas',
-    'second-weather',
-    'quiet-machine',
+    'bci-medical-imaging',
   ]);
 
   const indices = await projectRows.locator('.archive-rail b').allTextContents();
-  expect(indices).toEqual(['01', '02', '03', '04', '05']);
+  expect(indices).toEqual(['01', '02', '03']);
 });
 
 test('home scene paints nonblank pixels and reacts to command', async ({ page }) => {

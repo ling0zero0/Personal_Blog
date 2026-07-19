@@ -3,7 +3,11 @@
   "order": 2,
   "year": "2025",
   "color": "#e8328a",
-  "tags": ["Game", "Unity", "C#"],
+  "tags": [
+    "Game",
+    "Unity",
+    "C#"
+  ],
   "title": {
     "zh": "Jump Pro Max",
     "en": "Jump Pro Max"

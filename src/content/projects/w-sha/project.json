@@ -3,7 +3,11 @@
   "order": 1,
   "year": "2026",
   "color": "#d82020",
-  "tags": ["Game", "Full-stack", "LAN"],
+  "tags": [
+    "Game",
+    "Full-stack",
+    "LAN"
+  ],
   "title": {
     "zh": "W_SHA 局域网狼人杀",
     "en": "W_SHA LAN Werewolf"

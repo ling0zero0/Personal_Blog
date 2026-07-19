@@ -1,0 +1,73 @@
+{
+  "slug": "bci-medical-imaging",
+  "year": "2026",
+  "color": "#118b87",
+  "tags": [
+    "Medical Imaging",
+    "BCI",
+    "EEG"
+  ],
+  "title": {
+    "zh": "BCI 医学影像工作站",
+    "en": "BCI Medical Imaging Workstation"
+  },
+  "summary": {
+    "zh": "贯通医学影像、靶点规划、刺激仿真与 EEG 验证的患者中心化工作站。",
+    "en": "A patient-centered workstation connecting medical imaging, target planning, stimulation simulation, and EEG validation."
+  },
+  "description": {
+    "zh": "面向脑科学研究与临床辅助场景的一体化医学影像工作站。系统以患者数据为中心，串联影像查看、重建分割、靶点与入射路径规划、影像引导刺激仿真、EEG 波形对比和辅助报告归档，让多模态数据与关键操作集中在同一条工作流中。",
+    "en": "An integrated medical imaging workstation for neuroscience research and clinical support. It organizes multimodal data around each patient and connects image review, reconstruction and segmentation, target and entry-path planning, image-guided stimulation simulation, EEG waveform comparison, and assisted report archiving in one workflow."
+  },
+  "role": {
+    "zh": "产品设计、医学影像工作流设计、交互界面与系统实现",
+    "en": "Product design, medical imaging workflow design, interface design, and system implementation"
+  },
+  "outcome": {
+    "zh": "完成覆盖患者工作区、影像处理、靶点规划、刺激仿真、EEG 验证和辅助报告的一体化工作站方案。",
+    "en": "Completed an integrated workstation concept spanning patient workspaces, image processing, target planning, stimulation simulation, EEG validation, and assisted reporting."
+  },
+  "href": "https://github.com/ling0zero0/BCI",
+  "linkLabel": {
+    "zh": "私人仓库（需授权）",
+    "en": "Private repository (access required)"
+  },
+  "order": 3,
+  "images": [
+    {
+      "src": "./poster.webp",
+      "alt": {
+        "zh": "BCI 医学影像工作站的影像、规划、仿真与 EEG 验证总览",
+        "en": "Overview of imaging, planning, simulation, and EEG validation in the BCI workstation"
+      }
+    },
+    {
+      "src": "./gallery-02.webp",
+      "alt": {
+        "zh": "从患者工作区到辅助报告的患者中心化一体化工作流",
+        "en": "Patient-centered workflow from patient workspace to assisted reporting"
+      }
+    },
+    {
+      "src": "./gallery-03.webp",
+      "alt": {
+        "zh": "基于多平面医学影像的脑部靶点与入射路径规划",
+        "en": "Brain target and entry-path planning using multiplanar medical images"
+      }
+    },
+    {
+      "src": "./gallery-04.webp",
+      "alt": {
+        "zh": "结合组织模型与聚焦分布的影像引导刺激仿真",
+        "en": "Image-guided stimulation simulation with tissue models and focus distribution"
+      }
+    },
+    {
+      "src": "./gallery-05.webp",
+      "alt": {
+        "zh": "EEG 波形、头皮地形图、趋势分析与辅助报告界面",
+        "en": "EEG waveforms, scalp maps, trend analysis, and assisted reporting interface"
+      }
+    }
+  ]
+}
