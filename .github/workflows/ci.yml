@@ -13,7 +13,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      # npm ci rejects this cross-platform lockfile's optional WASM peers.
+      - run: npm install
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
