@@ -169,6 +169,7 @@ const copy = lang === 'zh'
     let pointerStartX: number | null = null;
     let timer: number | undefined;
     let idleHandle: number | undefined;
+    let idleTimeoutHandle: ReturnType<typeof setTimeout> | undefined;
     let lcpTimer: number | undefined;
     let lcpObserver: PerformanceObserver | undefined;
 
@@ -226,6 +227,7 @@ const copy = lang === 'zh'
         window.clearTimeout(lcpTimer);
         const load = () => {
           idleHandle = undefined;
+          idleTimeoutHandle = undefined;
           if (!carousel.isConnected) return;
           backgroundLoadingReady = true;
           if (inViewport) loadSlide(1);
@@ -235,7 +237,7 @@ const copy = lang === 'zh'
         if ('requestIdleCallback' in window) {
           idleHandle = window.requestIdleCallback(load, { timeout: 2000 });
         } else {
-          idleHandle = globalThis.setTimeout(load, 200);
+          idleTimeoutHandle = setTimeout(load, 200);
         }
       };
 
@@ -326,8 +328,8 @@ const copy = lang === 'zh'
       window.clearTimeout(lcpTimer);
       if (idleHandle !== undefined) {
         if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle);
-        else globalThis.clearTimeout(idleHandle);
       }
+      if (idleTimeoutHandle !== undefined) clearTimeout(idleTimeoutHandle);
       lcpObserver?.disconnect();
       intersectionObserver.disconnect();
       controller.abort();

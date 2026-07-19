@@ -8,7 +8,7 @@
   let sculpture: DataSculpture | undefined;
   let pendingHost: HTMLElement | undefined;
   let idleHandle: number | undefined;
-  let timeoutHandle: number | undefined;
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
   let loadHandler: (() => void) | undefined;
 
   const showFallback = (host: HTMLElement) => {
@@ -30,7 +30,7 @@
 
   const cancelPending = () => {
     if (idleHandle !== undefined && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle);
-    if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
+    if (timeoutHandle !== undefined) clearTimeout(timeoutHandle);
     if (loadHandler) removeEventListener('load', loadHandler);
     idleHandle = undefined;
     timeoutHandle = undefined;

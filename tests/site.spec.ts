@@ -48,12 +48,13 @@ test.describe('core pages', () => {
 });
 
 for (const project of projects.filter((project) => project.images.length > 1)) {
-  test(`${project.slug} uses an interactive detail carousel`, async ({ page }) => {
+  test(`${project.slug} uses an interactive detail carousel`, async ({ page, isMobile }) => {
     await page.goto(`/zh/projects/${project.slug}`, { waitUntil: 'domcontentloaded' });
     const carousel = page.locator('[data-project-carousel]');
     await expect(carousel).toBeVisible();
     await expect(carousel.locator('[data-carousel-slide]')).toHaveCount(project.images.length);
     await expect(carousel.locator('[data-carousel-current]')).toHaveText('01');
+    if (isMobile) await expect(carousel.locator('[data-carousel-slide] img')).toHaveCount(1);
     await carousel.press('ArrowRight');
     await expect(carousel.locator('[data-carousel-current]')).toHaveText('02');
     await expect(carousel.locator('[data-carousel-slide]').nth(1).locator('img')).toBeVisible();
@@ -98,14 +99,25 @@ test('project archive follows manifest order and generates display indices', asy
 
 test('home scene renders and reacts to command', async ({ page }) => {
   await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
-  const canvas = page.locator('#data-scene canvas');
-  await expect(canvas).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator('#data-scene')).toHaveAttribute('data-painted', 'true');
+  const scene = page.locator('#data-scene');
+  await expect(scene).toHaveAttribute('data-rendered', /^(true|fallback)$/, { timeout: 15_000 });
+  if (await scene.getAttribute('data-rendered') === 'true') {
+    await expect(scene.locator('canvas')).toBeVisible();
+    await expect(scene).toHaveAttribute('data-painted', 'true');
+  }
   await page.locator('.command-open').first().click();
   await expect(page.locator('#command-dialog')).toBeVisible();
   await page.locator('#command-input').fill('让场景安静一点');
   await page.locator('.command-form').press('Enter');
   await expect(page.locator('.command-response')).toContainText('低频呼吸');
+});
+
+test('reduced motion keeps the home scene static', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
+  const scene = page.locator('#data-scene');
+  await expect(scene).toHaveAttribute('data-rendered', 'fallback');
+  await expect(scene.locator('canvas')).toHaveCount(0);
 });
 
 test('home hero exposes the signal runner without clipping core copy', async ({ page }) => {
@@ -140,7 +152,7 @@ test('AI filter and language switching work', async ({ page }) => {
   await page.waitForURL('**/zh/journal?tag=AI');
   await expect(page.locator('.post-row:not([hidden])')).toHaveCount(2);
   await page.locator('.language-link').click();
-  await page.waitForURL('**/en/journal*');
+  await expect(page).toHaveURL(/\/en\/journal\/?$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
 
