@@ -10,7 +10,13 @@ const href = `/${lang}/projects/${project.slug}`;
   <div class="archive-rail mono" aria-hidden="true"><span>CASE</span><b>{project.index}</b><span>{project.year}</span></div>
   <a class="project-media" href={href} aria-label={`${project.title[lang]} — ${project.summary[lang]}`}>
     <span class="project-stamp mono" aria-hidden="true">FILE / {project.index} / LIVE</span>
-    <ProjectVisual slug={project.slug} index={project.index} label={`${project.title[lang]} visual`} />
+    <ProjectVisual
+      slug={project.slug}
+      index={project.index}
+      label={`${project.title[lang]} visual`}
+      images={project.poster ? [project.poster] : []}
+      lang={lang}
+    />
   </a>
   <div class="project-copy">
     <div class="project-meta mono"><span>{project.year}</span><span>{project.tags.join(' / ')}</span></div>
@@ -31,6 +37,7 @@ const href = `/${lang}/projects/${project.slug}`;
   .project-media::after { content: ''; position: absolute; inset: 18px -18px -18px 18px; z-index: -1; border: 1px solid var(--section-color); }
   .project-stamp { position: absolute; z-index: 7; top: -14px; left: clamp(18px, 4vw, 60px); padding: 9px 13px; background: var(--section-color); color: #11110f; transform: rotate(2deg); }
   .project-media :global(.project-visual) { min-height: 520px; height: min(61vw, 760px); clip-path: polygon(0 0, 100% 4%, 96% 100%, 3% 95%); transition: clip-path .8s var(--ease), transform .8s var(--ease); }
+  .project-media :global(.project-visual.has-images) { aspect-ratio: 4 / 3; min-height: 0; height: auto; }
   .project-copy { grid-column: 8 / 13; grid-row: 1; z-index: 6; align-self: end; margin-bottom: 4%; padding: clamp(24px, 4vw, 58px); background: var(--paper); color: #11110f; box-shadow: -10px 10px 0 var(--section-color); transform: translateY(5%) rotate(.7deg); }
   .reverse .project-copy { grid-column: 2 / 7; align-self: start; margin-top: 7%; margin-bottom: 0; transform: rotate(-.7deg); }
   .project-meta { display: flex; justify-content: space-between; gap: 18px; padding-bottom: 14px; border-bottom: 1px solid #11110f; color: #55554f; }
@@ -53,6 +60,7 @@ const href = `/${lang}/projects/${project.slug}`;
     .project-media, .reverse .project-media { grid-column: 2 / 9; grid-row: 1; align-self: start; transform: rotate(-1deg); filter: drop-shadow(9px 12px 0 #11110f); }
     .reverse .project-media { transform: rotate(1deg); }
     .project-media :global(.project-visual) { min-height: 330px; height: 70vw; }
+    .project-media :global(.project-visual.has-images) { min-height: 0; height: auto; }
     .project-copy, .reverse .project-copy { grid-column: 2 / 9; grid-row: 2; align-self: start; width: calc(100% - 18px); margin: -64px 0 0 18px; padding: 24px; transform: rotate(.4deg); box-shadow: -7px 7px 0 var(--section-color); }
     .reverse .project-copy { transform: rotate(-.4deg); }
     .project-copy h2 { font-size: var(--type-project-title); }

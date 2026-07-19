@@ -94,6 +94,7 @@ test('mobile menu is usable', async ({ page, isMobile }) => {
 });
 
 test('about portrait and floating section navigation are usable', async ({ page, isMobile }) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('/zh/about', { waitUntil: 'networkidle' });
 
   const portrait = page.locator('.portrait-image');
@@ -103,6 +104,7 @@ test('about portrait and floating section navigation are usable', async ({ page,
   await portrait.scrollIntoViewIfNeeded();
   await expect(portrait).toBeVisible();
   await expect(page.locator('.portrait-wordmark-group')).toHaveCount(2);
+  await expect(page.locator('.portrait-wordmark-track')).toHaveCSS('animation-name', 'portrait-titles');
   await expect(navigator).toBeVisible();
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 

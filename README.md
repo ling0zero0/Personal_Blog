@@ -1,6 +1,6 @@
 # 花辞树 Digital Space
 
-我是大王嘻嘻
+
 
 An immersive bilingual personal site built with Astro, Three.js, GSAP, and Markdown content collections.
 

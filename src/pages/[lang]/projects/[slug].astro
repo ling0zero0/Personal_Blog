@@ -37,7 +37,15 @@ const sectionItems = lang === 'zh'
         <h1>{project.title[lang]}</h1>
       </div>
       <div class="project-visual-frame">
-        <ProjectVisual slug={project.slug} index={project.index} label={`${project.title[lang]} visual`} />
+        <ProjectVisual
+          slug={project.slug}
+          index={project.index}
+          label={`${project.title[lang]} visual`}
+          images={project.gallery ?? (project.poster ? [project.poster] : [])}
+          lang={lang}
+          autoplay
+          priority
+        />
       </div>
       <p class="project-summary">{project.summary[lang]}</p>
       <span class="stage-axis mono" aria-hidden="true">CASE STUDY / {project.index}</span>
@@ -52,7 +60,7 @@ const sectionItems = lang === 'zh'
           <div><span class="mono muted">{copy.role}</span><p>{project.role[lang]}</p></div>
           <div><span class="mono muted">{copy.outcome}</span><p>{project.outcome[lang]}</p></div>
         </div>
-        <ArrowLink href={project.href} label={copy.visit} external />
+        <ArrowLink href={project.href} label={project.linkLabel?.[lang] ?? copy.visit} external />
       </div>
     </div>
   </section>
@@ -79,6 +87,7 @@ const sectionItems = lang === 'zh'
   .project-visual-frame { position: relative; z-index: 2; grid-column: 6 / -1; grid-row: 2; align-self: center; margin: 24px 1vw 10px 0; transform: rotateY(-8deg) rotateZ(2.5deg) translateZ(-20px); transform-origin: right center; box-shadow: -28px 34px 0 color-mix(in srgb, var(--section-color) 78%, #050505), -48px 55px 70px #000a; }
   .project-visual-frame::before { content: ''; position: absolute; z-index: 3; inset: -13px; border: 1px solid #ffffff99; pointer-events: none; }
   .project-visual-frame :global(.project-visual) { height: clamp(390px, 48vw, 680px); min-height: 0; }
+  .project-visual-frame :global(.project-visual.has-images) { aspect-ratio: 4 / 3; height: auto; }
   .project-summary { position: relative; z-index: 5; grid-column: 8 / -1; grid-row: 3; margin: -34px 0 0; padding: 22px 24px; border-left: 7px solid var(--section-color); background: #f4f3ec; color: #111; font-size: clamp(18px, 2vw, 28px); line-height: 1.25; box-shadow: 12px 12px 0 #000; }
   .stage-axis { position: absolute; left: calc(var(--pad) / 2); bottom: 84px; color: #000b; writing-mode: vertical-rl; transform: rotate(180deg); }
   .story-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 60px; }
@@ -102,6 +111,7 @@ const sectionItems = lang === 'zh'
     .project-visual-frame { width: 92%; margin: 0 0 0 auto; transform: rotateZ(2deg); box-shadow: -13px 17px 0 color-mix(in srgb, var(--section-color) 78%, #050505); }
     .project-visual-frame::before { inset: -7px; }
     .project-visual-frame :global(.project-visual) { height: min(76vw, 430px); min-height: 300px; }
+    .project-visual-frame :global(.project-visual.has-images) { min-height: 0; height: auto; }
     .project-summary { width: 88%; margin: 8px auto 0 0; padding: 18px; font-size: 18px; box-shadow: 8px 8px 0 #000; }
     .stage-axis { display: none; }
     .story-grid { grid-template-columns: 1fr; }

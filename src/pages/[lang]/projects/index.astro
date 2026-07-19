@@ -23,7 +23,7 @@ const sectionItems = lang === 'zh'
     <PageIntro index="01" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
   </div>
   <SignalBand index="01" label="PROJECT / FIELD" items={projects.map((project) => project.title[lang])} />
-  <section id="projects-list" class="projects-archive" data-section-anchor>
+  <section id="projects-list" class="projects-archive" data-count={projects.length.toString().padStart(2, '0')} data-section-anchor>
     <div class="container">
       {projects.map((project, i) => <ProjectRow project={project} lang={lang} position={i} />)}
     </div>
@@ -31,7 +31,7 @@ const sectionItems = lang === 'zh'
 </BaseLayout>
 <style>
   .projects-archive { position: relative; overflow: hidden; padding-top: clamp(125px, 15vw, 220px); }
-  .projects-archive::before { content: 'ARCHIVE / 03'; position: absolute; z-index: 0; right: var(--pad); top: clamp(28px, 4vw, 58px); color: var(--section-color); font: 600 clamp(54px, 7.2vw, 110px)/1 'DM Mono', monospace; white-space: nowrap; opacity: .11; pointer-events: none; }
+  .projects-archive::before { content: 'ARCHIVE / ' attr(data-count); position: absolute; z-index: 0; right: var(--pad); top: clamp(28px, 4vw, 58px); color: var(--section-color); font: 600 clamp(54px, 7.2vw, 110px)/1 'DM Mono', monospace; white-space: nowrap; opacity: .11; pointer-events: none; }
   .projects-archive .container { position: relative; z-index: 1; }
   @media (max-width: 760px) {
     .projects-archive { padding-top: 50px; }
