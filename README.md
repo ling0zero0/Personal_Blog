@@ -21,6 +21,8 @@ On Windows, double-click `start.bat` to start Astro in its built-in background m
 npm run check       # Astro and TypeScript diagnostics
 npm run build       # Type-check and static production build
 npm run preview     # Preview the production build
+npm run project:add # Validate and add a project from an intake JSON file
+npm run project:check # Validate all project manifests and images
 npm run test:e2e    # Desktop and mobile Playwright coverage
 ```
 
@@ -28,7 +30,9 @@ npm run test:e2e    # Desktop and mobile Playwright coverage
 
 Blog posts live in `src/content/blog/zh` and `src/content/blog/en`. Each translation uses the same `translationKey` and provides title, description, date, tags, language, and draft metadata.
 
-Profile and project copy is maintained in `src/data`. The initial AI navigator is local and deterministic; its adapter is in `src/scripts/intent.ts`, so a server-side model provider can replace it later without changing the command palette UI.
+Projects live in `src/content/projects`, with one folder containing the manifest and optimized images for each project. See [docs/adding-projects.md](docs/adding-projects.md) for the repeatable addition workflow.
+
+Profile copy is maintained in `src/data`. The initial AI navigator is local and deterministic; its adapter is in `src/scripts/intent.ts`, so a server-side model provider can replace it later without changing the command palette UI.
 
 ## Interaction and fallbacks
 

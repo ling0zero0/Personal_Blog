@@ -1,0 +1,83 @@
+{
+  "slug": "w-sha",
+  "order": 1,
+  "year": "2026",
+  "color": "#d82020",
+  "tags": ["Game", "Full-stack", "LAN"],
+  "title": {
+    "zh": "W_SHA 局域网狼人杀",
+    "en": "W_SHA LAN Werewolf"
+  },
+  "summary": {
+    "zh": "让 Windows 主机成为公共屏幕、玩家用手机扫码即玩的局域网狼人杀。",
+    "en": "A LAN Werewolf game with a Windows host screen and instant phone-based play."
+  },
+  "description": {
+    "zh": "一套面向线下聚会的局域网狼人杀辅助系统。Windows 电脑负责创建房间、配置角色和控制流程，玩家连接同一 Wi-Fi 后通过手机浏览器扫码加入；系统覆盖身份分配、夜间行动、白天发言、投票结算、断线重连与本地状态恢复，全程无需手机 App 或云服务器。",
+    "en": "A LAN-based Werewolf system for in-person gatherings. A Windows computer creates the room, configures roles, and runs the shared game screen while players join from phone browsers on the same Wi-Fi. It handles role assignment, night actions, discussion, voting, reconnects, and local recovery without a mobile app or cloud service."
+  },
+  "role": {
+    "zh": "产品设计、全栈开发、游戏状态机、实时通信与 Windows 分发",
+    "en": "Product design, full-stack development, game state machine, real-time networking, and Windows distribution"
+  },
+  "outcome": {
+    "zh": "完成可分发 MVP，支持 7 类角色、完整对局流程、断线恢复、自动化测试及 Windows 安装版与便携版打包。",
+    "en": "Delivered a distributable MVP with seven roles, a complete game loop, reconnect recovery, automated tests, and Windows installer and portable builds."
+  },
+  "href": "https://github.com/ling0zero0/w_sha",
+  "linkLabel": {
+    "zh": "查看 GitHub 仓库",
+    "en": "View GitHub repository"
+  },
+  "images": [
+    {
+      "src": "./poster.webp",
+      "alt": {
+        "zh": "W_SHA 局域网狼人杀产品总览海报",
+        "en": "W_SHA LAN Werewolf product overview poster"
+      }
+    },
+    {
+      "src": "./gallery-02.webp",
+      "alt": {
+        "zh": "朋友围坐并通过电脑与手机进行局域网狼人杀",
+        "en": "Friends playing LAN Werewolf together with a computer and phones"
+      }
+    },
+    {
+      "src": "./gallery-03.webp",
+      "alt": {
+        "zh": "局域网直连、手机浏览器加入、角色系统与断线恢复功能",
+        "en": "LAN connection, browser-based joining, role system, and reconnect recovery"
+      }
+    },
+    {
+      "src": "./gallery-04.webp",
+      "alt": {
+        "zh": "狼人、预言家、女巫、守卫、猎人和白痴角色阵营",
+        "en": "Werewolf, Seer, Witch, Guard, Hunter, and Idiot role lineup"
+      }
+    },
+    {
+      "src": "./gallery-05.webp",
+      "alt": {
+        "zh": "房主开房、玩家扫码加入并开始推理的三步流程",
+        "en": "Three-step flow for hosting, scanning to join, and starting the game"
+      }
+    },
+    {
+      "src": "./gallery-06.webp",
+      "alt": {
+        "zh": "玩家通过手机浏览器扫描二维码加入游戏",
+        "en": "Players scanning a QR code to join from a phone browser"
+      }
+    },
+    {
+      "src": "./gallery-07.webp",
+      "alt": {
+        "zh": "多名玩家展示各自的秘密身份并进行推理",
+        "en": "Players holding secret roles during a Werewolf deduction game"
+      }
+    }
+  ]
+}

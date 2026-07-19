@@ -1,0 +1,48 @@
+{
+  "slug": "example-project",
+  "position": 3,
+  "year": "2026",
+  "color": "#167d6b",
+  "tags": ["Web", "AI", "Tool"],
+  "title": {
+    "zh": "示例项目",
+    "en": "Example Project"
+  },
+  "summary": {
+    "zh": "用一句话说明项目是什么，以及它最重要的特点。",
+    "en": "One sentence explaining what the project is and its defining quality."
+  },
+  "description": {
+    "zh": "用一小段文字交代项目背景、主要用户、核心流程和使用的关键技术。",
+    "en": "A short paragraph covering context, audience, core workflow, and key technologies."
+  },
+  "role": {
+    "zh": "产品设计、前端开发与视觉实现",
+    "en": "Product design, front-end development, and visual implementation"
+  },
+  "outcome": {
+    "zh": "说明已经交付的功能、实际效果或可以验证的成果。",
+    "en": "Describe delivered functionality, observed impact, or another verifiable result."
+  },
+  "href": "https://github.com/username/example-project",
+  "linkLabel": {
+    "zh": "查看 GitHub 仓库",
+    "en": "View GitHub repository"
+  },
+  "images": [
+    {
+      "file": "01-poster.jpg",
+      "alt": {
+        "zh": "示例项目主视觉海报",
+        "en": "Example project key visual poster"
+      }
+    },
+    {
+      "file": "02-feature.jpg",
+      "alt": {
+        "zh": "示例项目核心功能画面",
+        "en": "Example project core feature"
+      }
+    }
+  ]
+}

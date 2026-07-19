@@ -1,0 +1,29 @@
+{
+  "slug": "quiet-machine",
+  "order": 5,
+  "year": "2024",
+  "color": "#e6b422",
+  "tags": ["AI", "Product", "Interface"],
+  "title": {
+    "zh": "安静的机器",
+    "en": "Quiet Machine"
+  },
+  "summary": {
+    "zh": "一个不抢走注意力的个人智能界面。",
+    "en": "A personal intelligence interface that does not demand attention."
+  },
+  "description": {
+    "zh": "探索低打扰 AI 的产品原型。系统根据工作语境提供小而及时的介入，并把不确定性明确呈现给使用者。",
+    "en": "A product prototype for low-interruption AI. It offers small, timely interventions based on work context while making uncertainty legible to the user."
+  },
+  "role": {
+    "zh": "产品策略、体验设计、前端工程",
+    "en": "Product strategy, experience design, front-end engineering"
+  },
+  "outcome": {
+    "zh": "完成 12 周封闭测试，日活留存 72%",
+    "en": "12-week closed beta with 72% daily retention"
+  },
+  "href": "https://example.com/quiet-machine",
+  "images": []
+}

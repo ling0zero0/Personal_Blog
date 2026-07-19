@@ -6,7 +6,7 @@ async function expectNoOverflow(page: Page) {
 }
 
 test.describe('core pages', () => {
-  for (const route of ['/zh/', '/en/', '/zh/projects', '/en/journal', '/zh/about', '/zh/journal/seeing-the-model']) {
+  for (const route of ['/zh/', '/en/', '/zh/projects', '/zh/projects/w-sha', '/zh/projects/jump-pro-max', '/en/journal', '/zh/about', '/zh/journal/seeing-the-model']) {
     test(`${route} renders without layout overflow`, async ({ page }) => {
       const errors: string[] = [];
       page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
@@ -18,7 +18,46 @@ test.describe('core pages', () => {
   }
 });
 
-test('home scene paints nonblank pixels and reacts to command', async ({ page, browserName }) => {
+for (const project of [
+  { slug: 'w-sha', slideCount: 7 },
+  { slug: 'jump-pro-max', slideCount: 6 },
+]) {
+  test(`${project.slug} uses a fixed archive poster and an interactive detail carousel`, async ({ page }) => {
+    await page.goto('/zh/projects', { waitUntil: 'networkidle' });
+    const archivePoster = page.locator(`[data-project="${project.slug}"] .project-visual`);
+    await expect(archivePoster).toHaveClass(/has-images/);
+    await expect(archivePoster).not.toHaveAttribute('data-project-carousel');
+
+    await page.goto(`/zh/projects/${project.slug}`, { waitUntil: 'networkidle' });
+    const carousel = page.locator('[data-project-carousel]');
+    await expect(carousel).toBeVisible();
+    await expect(carousel.locator('[data-carousel-slide]')).toHaveCount(project.slideCount);
+    await expect(carousel.locator('[data-carousel-current]')).toHaveText('01');
+    await carousel.locator('[data-carousel-next]').click();
+    await expect(carousel.locator('[data-carousel-current]')).toHaveText('02');
+    await expect(carousel).toHaveAttribute('data-paused', 'true');
+    await expectNoOverflow(page);
+  });
+}
+
+test('project archive follows manifest order and generates display indices', async ({ page }) => {
+  await page.goto('/zh/projects', { waitUntil: 'networkidle' });
+  const projectRows = page.locator('[data-project]');
+  await expect(projectRows).toHaveCount(5);
+  const slugs = await projectRows.evaluateAll((rows) => rows.map((row) => row.getAttribute('data-project')));
+  expect(slugs).toEqual([
+    'w-sha',
+    'jump-pro-max',
+    'latent-atlas',
+    'second-weather',
+    'quiet-machine',
+  ]);
+
+  const indices = await projectRows.locator('.archive-rail b').allTextContents();
+  expect(indices).toEqual(['01', '02', '03', '04', '05']);
+});
+
+test('home scene paints nonblank pixels and reacts to command', async ({ page }) => {
   await page.goto('/zh/', { waitUntil: 'networkidle' });
   const canvas = page.locator('#data-scene canvas');
   await expect(canvas).toBeVisible({ timeout: 15_000 });

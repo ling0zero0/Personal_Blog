@@ -1,0 +1,29 @@
+{
+  "slug": "latent-atlas",
+  "order": 3,
+  "year": "2026",
+  "color": "#ff4d24",
+  "tags": ["AI", "WebGL", "Research"],
+  "title": {
+    "zh": "潜空间图谱",
+    "en": "Latent Atlas"
+  },
+  "summary": {
+    "zh": "一座可以行走的机器记忆档案馆。",
+    "en": "A walkable archive of machine memory."
+  },
+  "description": {
+    "zh": "将四万段城市声音编码为空间坐标，通过实时语义检索重组为不断变化的地形。访客既可以漫游，也可以用自然语言改变观察尺度。",
+    "en": "Forty thousand urban recordings become spatial coordinates, continuously reorganized through semantic retrieval. Visitors roam freely or change the viewing scale with natural language."
+  },
+  "role": {
+    "zh": "创意方向、交互原型、实时图形",
+    "en": "Creative direction, interaction prototype, real-time graphics"
+  },
+  "outcome": {
+    "zh": "2026 数字文化季主展，现场 18,000 位访客",
+    "en": "Flagship installation at Digital Culture Season 2026, 18,000 visitors"
+  },
+  "href": "https://example.com/latent-atlas",
+  "images": []
+}

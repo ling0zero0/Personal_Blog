@@ -1,15 +1,112 @@
 ---
-const { slug, index, label = '' } = Astro.props;
+import { Image } from 'astro:assets';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-astro';
+import type { Locale } from '../data/site';
+import type { ProjectImage } from '../data/projects';
+
+const {
+  slug,
+  index,
+  label = '',
+  images = [],
+  lang = 'zh',
+  autoplay = false,
+  priority = false,
+} = Astro.props as {
+  slug: string;
+  index: string;
+  label?: string;
+  images?: ProjectImage[];
+  lang?: Locale;
+  autoplay?: boolean;
+  priority?: boolean;
+};
+const slides = images.map((image) => ({ src: image.src, alt: image.alt[lang] }));
+const hasImages = slides.length > 0;
+const hasCarousel = slides.length > 1;
+const copy = lang === 'zh'
+  ? { previous: '上一张海报', next: '下一张海报', pause: '暂停自动播放', play: '继续自动播放', slide: '张' }
+  : { previous: 'Previous poster', next: 'Next poster', pause: 'Pause autoplay', play: 'Resume autoplay', slide: 'slide' };
 ---
-<div class:list={['project-visual', `visual-${slug}`]} role="img" aria-label={label}>
-  <div class="visual-grid"></div>
-  {slug === 'latent-atlas' && <><div class="atlas-orbit orbit-a"></div><div class="atlas-orbit orbit-b"></div><div class="atlas-core"></div><div class="visual-data mono">40,892 / VECTOR NODES</div></>}
-  {slug === 'second-weather' && <><div class="weather-bars">{Array.from({ length: 18 }).map((_, i) => <i style={`--i:${i}`}></i>)}</div><div class="weather-ring"></div><div class="visual-data mono">PRESSURE / 1008.4 HPA</div></>}
-  {slug === 'quiet-machine' && <><div class="machine-frame"><i></i><i></i><i></i><span class="mono">LISTENING<br/>CONFIDENCE .84</span></div><div class="machine-signal"></div><div class="visual-data mono">LOCAL CONTEXT / ACTIVE</div></>}
-  <span class="visual-index mono">{index}</span>
+<div
+  class:list={['project-visual', `visual-${slug}`, { 'has-images': hasImages }]}
+  role={hasImages ? 'region' : 'img'}
+  aria-roledescription={hasCarousel ? 'carousel' : undefined}
+  aria-label={label}
+  tabindex={hasCarousel ? '0' : undefined}
+  data-project-carousel={hasCarousel ? '' : undefined}
+  data-autoplay={autoplay && hasCarousel ? 'true' : undefined}
+  data-pause-label={copy.pause}
+  data-play-label={copy.play}
+>
+  {hasImages ? (
+    <>
+      <div class="visual-slides">
+        {slides.map((slide, slideIndex) => (
+          <figure
+            class:list={['visual-slide', { 'is-active': slideIndex === 0 }]}
+            data-carousel-slide
+            aria-hidden={slideIndex === 0 ? 'false' : 'true'}
+            aria-label={`${slideIndex + 1} / ${slides.length} ${copy.slide}`}
+          >
+            <Image
+              src={slide.src}
+              alt={slide.alt}
+              widths={[480, 760, 1080, 1448]}
+              sizes="(max-width: 720px) 92vw, (max-width: 1540px) 58vw, 820px"
+              loading={priority && slideIndex === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+              quality={86}
+            />
+          </figure>
+        ))}
+      </div>
+      {hasCarousel && (
+        <>
+          <span class="carousel-status mono" aria-live="polite">
+            <span data-carousel-current>01</span> / {String(slides.length).padStart(2, '0')}
+          </span>
+          <button class="carousel-button carousel-toggle" type="button" data-carousel-toggle aria-label={copy.pause} title={copy.pause}>
+            <Pause class="icon-pause" aria-hidden="true" />
+            <Play class="icon-play" aria-hidden="true" />
+          </button>
+          <button class="carousel-button carousel-previous" type="button" data-carousel-previous aria-label={copy.previous} title={copy.previous}>
+            <ChevronLeft aria-hidden="true" />
+          </button>
+          <button class="carousel-button carousel-next" type="button" data-carousel-next aria-label={copy.next} title={copy.next}>
+            <ChevronRight aria-hidden="true" />
+          </button>
+        </>
+      )}
+    </>
+  ) : (
+    <>
+      <div class="visual-grid"></div>
+      {slug === 'latent-atlas' && <><div class="atlas-orbit orbit-a"></div><div class="atlas-orbit orbit-b"></div><div class="atlas-core"></div><div class="visual-data mono">40,892 / VECTOR NODES</div></>}
+      {slug === 'second-weather' && <><div class="weather-bars">{Array.from({ length: 18 }).map((_, i) => <i style={`--i:${i}`}></i>)}</div><div class="weather-ring"></div><div class="visual-data mono">PRESSURE / 1008.4 HPA</div></>}
+      {slug === 'quiet-machine' && <><div class="machine-frame"><i></i><i></i><i></i><span class="mono">LISTENING<br/>CONFIDENCE .84</span></div><div class="machine-signal"></div><div class="visual-data mono">LOCAL CONTEXT / ACTIVE</div></>}
+      <span class="visual-index mono">{index}</span>
+    </>
+  )}
 </div>
 <style>
   .project-visual { position: relative; min-height: 420px; height: min(62vw, 720px); overflow: hidden; background: #11110f; color: #efefe9; isolation: isolate; }
+  .project-visual.has-images { background: #050505; touch-action: pan-y; }
+  .visual-slides, .visual-slide { position: absolute; inset: 0; }
+  .visual-slide { margin: 0; opacity: 0; visibility: hidden; transition: opacity .55s var(--ease), visibility .55s; }
+  .visual-slide.is-active { opacity: 1; visibility: visible; }
+  .visual-slide :global(img) { width: 100%; height: 100%; object-fit: contain; }
+  .carousel-status { position: absolute; z-index: 6; top: 16px; left: 16px; padding: 8px 10px; background: #050505d9; color: #fff; }
+  .carousel-button { position: absolute; z-index: 7; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 1px solid #ffffff85; border-radius: 4px; background: #050505d9; color: #fff; cursor: pointer; transition: background .2s, color .2s, transform .2s; }
+  .carousel-button:hover, .carousel-button:focus-visible { background: #fff; color: #111; transform: scale(1.04); }
+  .carousel-button :global(svg) { width: 22px; height: 22px; }
+  .carousel-previous { left: 16px; top: 50%; transform: translateY(-50%); }
+  .carousel-next { right: 16px; top: 50%; transform: translateY(-50%); }
+  .carousel-previous:hover, .carousel-previous:focus-visible, .carousel-next:hover, .carousel-next:focus-visible { transform: translateY(-50%) scale(1.04); }
+  .carousel-toggle { top: 16px; right: 16px; }
+  .icon-play { display: none; }
+  [data-paused='true'] .icon-pause { display: none; }
+  [data-paused='true'] .icon-play { display: block; }
   .visual-grid { position: absolute; inset: -40px; opacity: .16; background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 40px 40px; animation: visual-grid-drift 16s linear infinite; }
   .visual-grid::after { content: ''; position: absolute; inset: 12%; border: 1px solid #ffffff55; }
   .visual-index { position: absolute; z-index: 4; top: 24px; left: 26px; font-size: 13px; }
@@ -42,5 +139,121 @@ const { slug, index, label = '' } = Astro.props;
   @keyframes weather-spin { to { transform: translate(-50%, -50%) rotate(326deg); } }
   @keyframes machine-breathe { 50% { scale: 1.06; opacity: .48; } }
   @keyframes signal-scan { 25% { transform: translate(-78vw, 0); } 50% { transform: translate(-78vw, 50vh); } 75% { transform: translate(0, 50vh); } }
-  @media (max-width: 700px) { .project-visual { min-height: 330px; height: 72vw; } .visual-grid::after { inset: 10%; } .machine-frame { inset: 16%; } }
+  @media (max-width: 700px) {
+    .project-visual { min-height: 330px; height: 72vw; }
+    .visual-grid::after { inset: 10%; }
+    .machine-frame { inset: 16%; }
+    .carousel-button { width: 38px; height: 38px; }
+    .carousel-previous { left: 9px; }
+    .carousel-next { right: 9px; }
+    .carousel-status { top: 9px; left: 9px; }
+    .carousel-toggle { top: 9px; right: 9px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .visual-slide, .carousel-button { transition: none; }
+  }
 </style>
+<script>
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+  document.querySelectorAll<HTMLElement>('[data-project-carousel]').forEach((carousel) => {
+    const slides = Array.from(carousel.querySelectorAll<HTMLElement>('[data-carousel-slide]'));
+    const previous = carousel.querySelector<HTMLButtonElement>('[data-carousel-previous]');
+    const next = carousel.querySelector<HTMLButtonElement>('[data-carousel-next]');
+    const toggle = carousel.querySelector<HTMLButtonElement>('[data-carousel-toggle]');
+    const current = carousel.querySelector<HTMLElement>('[data-carousel-current]');
+    const wantsAutoplay = carousel.dataset.autoplay === 'true';
+    let activeIndex = 0;
+    let userPaused = reducedMotion.matches || !wantsAutoplay;
+    let hovering = false;
+    let focused = false;
+    let pointerStartX: number | null = null;
+    let timer: number | undefined;
+
+    const updatePauseState = () => {
+      carousel.dataset.paused = String(userPaused);
+      if (!toggle) return;
+      const label = userPaused ? carousel.dataset.playLabel : carousel.dataset.pauseLabel;
+      if (label) {
+        toggle.setAttribute('aria-label', label);
+        toggle.title = label;
+      }
+    };
+
+    const schedule = () => {
+      window.clearTimeout(timer);
+      if (!wantsAutoplay || userPaused || hovering || focused || document.hidden) return;
+      timer = window.setTimeout(() => {
+        showSlide(activeIndex + 1);
+        schedule();
+      }, 4000);
+    };
+
+    const showSlide = (requestedIndex: number, fromUser = false) => {
+      activeIndex = (requestedIndex + slides.length) % slides.length;
+      slides.forEach((slide, slideIndex) => {
+        const isActive = slideIndex === activeIndex;
+        slide.classList.toggle('is-active', isActive);
+        slide.setAttribute('aria-hidden', String(!isActive));
+      });
+      if (current) current.textContent = String(activeIndex + 1).padStart(2, '0');
+      if (fromUser) userPaused = true;
+      updatePauseState();
+      schedule();
+    };
+
+    previous?.addEventListener('click', () => showSlide(activeIndex - 1, true));
+    next?.addEventListener('click', () => showSlide(activeIndex + 1, true));
+    toggle?.addEventListener('click', () => {
+      userPaused = !userPaused;
+      updatePauseState();
+      schedule();
+    });
+    carousel.addEventListener('pointerenter', () => {
+      hovering = true;
+      schedule();
+    });
+    carousel.addEventListener('pointerleave', () => {
+      hovering = false;
+      pointerStartX = null;
+      schedule();
+    });
+    carousel.addEventListener('focusin', () => {
+      focused = true;
+      schedule();
+    });
+    carousel.addEventListener('focusout', (event) => {
+      focused = carousel.contains(event.relatedTarget as Node | null);
+      schedule();
+    });
+    carousel.addEventListener('pointerdown', (event) => {
+      if (event.pointerType !== 'mouse') pointerStartX = event.clientX;
+    });
+    carousel.addEventListener('pointerup', (event) => {
+      if (pointerStartX === null) return;
+      const distance = event.clientX - pointerStartX;
+      pointerStartX = null;
+      if (Math.abs(distance) < 48) return;
+      showSlide(activeIndex + (distance < 0 ? 1 : -1), true);
+    });
+    carousel.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        showSlide(activeIndex - 1, true);
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        showSlide(activeIndex + 1, true);
+      }
+    });
+    document.addEventListener('visibilitychange', schedule);
+    reducedMotion.addEventListener('change', (event) => {
+      if (event.matches) userPaused = true;
+      updatePauseState();
+      schedule();
+    });
+
+    updatePauseState();
+    schedule();
+  });
+</script>

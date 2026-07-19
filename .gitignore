@@ -3,5 +3,6 @@ dist/
 .astro/
 playwright-report/
 test-results/
+.project-intake.json
 .DS_Store
 .npm-cache/

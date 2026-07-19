@@ -1,0 +1,76 @@
+{
+  "slug": "jump-pro-max",
+  "order": 2,
+  "year": "2025",
+  "color": "#e8328a",
+  "tags": ["Game", "Unity", "C#"],
+  "title": {
+    "zh": "Jump Pro Max",
+    "en": "Jump Pro Max"
+  },
+  "summary": {
+    "zh": "一款融合技能成长、机关挑战与 Boss 战的霓虹像素横版动作游戏。",
+    "en": "A neon pixel action platformer built around skill progression, trap challenges, and boss battles."
+  },
+  "description": {
+    "zh": "使用 Unity 2022.3 与 C# 开发的 2D 像素横版动作游戏。玩家在多段霓虹城市关卡中完成奔跑、跳跃与战斗，通过二段跳、冲刺、爬墙和远程射击等能力跨越移动平台与机关，并收集资源、协同伙伴角色，最终进入 Boss 战。",
+    "en": "A 2D pixel action platformer built with Unity 2022.3 and C#. Players move and fight through neon city stages, unlocking double jump, dash, wall climbing, and ranged attacks to cross moving platforms and hazards, collect resources, work with a companion, and reach the final boss encounter."
+  },
+  "role": {
+    "zh": "游戏玩法设计、Unity/C# 开发、角色控制与技能系统、关卡机关、敌人 AI 与 UI",
+    "en": "Gameplay design, Unity/C# development, character controls and skills, level hazards, enemy AI, and UI"
+  },
+  "outcome": {
+    "zh": "完成从开始界面、两段主关卡到结局场景的可玩流程，并实现技能解锁、对象池射击、收集系统、伙伴跟随与 Boss 战。",
+    "en": "Completed a playable flow from start screen through two main levels and an ending scene, with unlockable skills, pooled projectiles, collectibles, companion behavior, and boss encounters."
+  },
+  "href": "https://github.com/ling0zero0/Unity",
+  "linkLabel": {
+    "zh": "查看 GitHub 仓库",
+    "en": "View GitHub repository"
+  },
+  "images": [
+    {
+      "src": "./poster.webp",
+      "alt": {
+        "zh": "Jump Pro Max 霓虹像素动作平台游戏主视觉海报",
+        "en": "Jump Pro Max neon pixel action platformer key visual"
+      }
+    },
+    {
+      "src": "./gallery-02.webp",
+      "alt": {
+        "zh": "角色使用二段跳穿越移动平台、齿轮与尖刺机关",
+        "en": "Hero double-jumping through moving platforms, gears, and spike traps"
+      }
+    },
+    {
+      "src": "./gallery-03.webp",
+      "alt": {
+        "zh": "角色与 Bringer of Death Boss 的最终战斗",
+        "en": "Final battle against the Bringer of Death boss"
+      }
+    },
+    {
+      "src": "./gallery-04.webp",
+      "alt": {
+        "zh": "雨夜霓虹城市中的浮空机关关卡",
+        "en": "Floating platform stage in a rainy neon city"
+      }
+    },
+    {
+      "src": "./gallery-05.webp",
+      "alt": {
+        "zh": "主角、伙伴角色、技能与收集物系统",
+        "en": "Hero, companion, skills, and collectible systems"
+      }
+    },
+    {
+      "src": "./gallery-06.webp",
+      "alt": {
+        "zh": "Jump Pro Max 月夜城市与 Boss 剪影封面",
+        "en": "Jump Pro Max moonlit city and boss silhouette cover"
+      }
+    }
+  ]
+}
