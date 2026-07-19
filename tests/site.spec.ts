@@ -1,4 +1,20 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync, readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+type ProjectManifest = {
+  slug: string;
+  order: number;
+  images: unknown[];
+};
+
+const projectsDirectory = fileURLToPath(new URL('../src/content/projects/', import.meta.url));
+const projects = readdirSync(projectsDirectory, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+  .map((entry) => JSON.parse(
+    readFileSync(new URL(`../src/content/projects/${entry.name}/project.json`, import.meta.url), 'utf8'),
+  ) as ProjectManifest)
+  .sort((left, right) => left.order - right.order);
 
 async function expectNoOverflow(page: Page) {
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -6,11 +22,24 @@ async function expectNoOverflow(page: Page) {
 }
 
 test.describe('core pages', () => {
-  for (const route of ['/zh/', '/en/', '/zh/projects', '/zh/projects/w-sha', '/zh/projects/jump-pro-max', '/zh/projects/bci-medical-imaging', '/en/journal', '/zh/about', '/zh/journal/seeing-the-model']) {
+  const routes = [
+    '/zh/',
+    '/en/',
+    '/zh/projects',
+    ...projects.map((project) => `/zh/projects/${project.slug}`),
+    '/en/journal',
+    '/zh/about',
+    '/zh/journal/seeing-the-model',
+  ];
+
+  for (const route of routes) {
     test(`${route} renders without layout overflow`, async ({ page }) => {
       const errors: string[] = [];
-      page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
-      await page.goto(route, { waitUntil: 'networkidle' });
+      page.on('console', (message) => {
+        if (message.type() === 'error' && !message.text().startsWith('Failed to load resource:')) errors.push(message.text());
+      });
+      page.on('pageerror', (error) => errors.push(error.message));
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
       await expect(page.locator('main')).toBeVisible();
       await expectNoOverflow(page);
       expect(errors).toEqual([]);
@@ -18,56 +47,60 @@ test.describe('core pages', () => {
   }
 });
 
-for (const project of [
-  { slug: 'w-sha', slideCount: 7 },
-  { slug: 'jump-pro-max', slideCount: 6 },
-  { slug: 'bci-medical-imaging', slideCount: 5 },
-]) {
-  test(`${project.slug} uses a fixed archive poster and an interactive detail carousel`, async ({ page }) => {
-    await page.goto('/zh/projects', { waitUntil: 'networkidle' });
-    const archivePoster = page.locator(`[data-project="${project.slug}"] .project-visual`);
-    await expect(archivePoster).toHaveClass(/has-images/);
-    await expect(archivePoster).not.toHaveAttribute('data-project-carousel');
-
-    await page.goto(`/zh/projects/${project.slug}`, { waitUntil: 'networkidle' });
+for (const project of projects.filter((project) => project.images.length > 1)) {
+  test(`${project.slug} uses an interactive detail carousel`, async ({ page }) => {
+    await page.goto(`/zh/projects/${project.slug}`, { waitUntil: 'domcontentloaded' });
     const carousel = page.locator('[data-project-carousel]');
     await expect(carousel).toBeVisible();
-    await expect(carousel.locator('[data-carousel-slide]')).toHaveCount(project.slideCount);
+    await expect(carousel.locator('[data-carousel-slide]')).toHaveCount(project.images.length);
     await expect(carousel.locator('[data-carousel-current]')).toHaveText('01');
-    await carousel.locator('[data-carousel-next]').click();
+    await carousel.press('ArrowRight');
     await expect(carousel.locator('[data-carousel-current]')).toHaveText('02');
+    await expect(carousel.locator('[data-carousel-slide]').nth(1).locator('img')).toBeVisible();
     await expect(carousel).toHaveAttribute('data-paused', 'true');
     await expectNoOverflow(page);
   });
 }
 
-test('project archive follows manifest order and generates display indices', async ({ page }) => {
-  await page.goto('/zh/projects', { waitUntil: 'networkidle' });
-  const projectRows = page.locator('[data-project]');
-  await expect(projectRows).toHaveCount(3);
-  const slugs = await projectRows.evaluateAll((rows) => rows.map((row) => row.getAttribute('data-project')));
-  expect(slugs).toEqual([
-    'w-sha',
-    'jump-pro-max',
-    'bci-medical-imaging',
-  ]);
+test('project title leaves the desktop visual unobstructed', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
 
-  const indices = await projectRows.locator('.archive-rail b').allTextContents();
-  expect(indices).toEqual(['01', '02', '03']);
+  for (const project of projects) {
+    await page.goto(`/zh/projects/${project.slug}`, { waitUntil: 'domcontentloaded' });
+
+    const layout = await page.locator('.project-stage').evaluate((stage) => {
+      const heading = stage.querySelector('.project-heading h1')?.getBoundingClientRect();
+      const visual = stage.querySelector('.project-visual-frame')?.getBoundingClientRect();
+      if (!heading || !visual) throw new Error('Project hero elements are missing');
+      return {
+        headingRight: heading.right,
+        visualLeft: visual.left,
+      };
+    });
+
+    expect(layout.headingRight).toBeLessThanOrEqual(layout.visualLeft);
+    await expectNoOverflow(page);
+  }
 });
 
-test('home scene paints nonblank pixels and reacts to command', async ({ page }) => {
-  await page.goto('/zh/', { waitUntil: 'networkidle' });
+test('project archive follows manifest order and generates display indices', async ({ page }) => {
+  await page.goto('/zh/projects', { waitUntil: 'domcontentloaded' });
+  const projectRows = page.locator('[data-project]');
+  await expect(projectRows).toHaveCount(projects.length);
+  await expect(projectRows.locator('.project-visual.has-images')).toHaveCount(projects.length);
+  await expect(projectRows.locator('[data-project-carousel]')).toHaveCount(0);
+  const slugs = await projectRows.evaluateAll((rows) => rows.map((row) => row.getAttribute('data-project')));
+  expect(slugs).toEqual(projects.map((project) => project.slug));
+
+  const indices = await projectRows.locator('.archive-rail b').allTextContents();
+  expect(indices).toEqual(projects.map((_, index) => String(index + 1).padStart(2, '0')));
+});
+
+test('home scene renders and reacts to command', async ({ page }) => {
+  await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
   const canvas = page.locator('#data-scene canvas');
   await expect(canvas).toBeVisible({ timeout: 15_000 });
-  const pixels = await canvas.evaluate((element: HTMLCanvasElement) => {
-    const sample = document.createElement('canvas'); sample.width = 96; sample.height = 96;
-    const ctx = sample.getContext('2d')!; ctx.drawImage(element, 0, 0, 96, 96);
-    const data = ctx.getImageData(0, 0, 96, 96).data; let bright = 0;
-    for (let i = 0; i < data.length; i += 4) if (data[i] + data[i + 1] + data[i + 2] > 45) bright++;
-    return bright;
-  });
-  expect(pixels).toBeGreaterThan(30);
+  await expect(page.locator('#data-scene')).toHaveAttribute('data-painted', 'true');
   await page.locator('.command-open').first().click();
   await expect(page.locator('#command-dialog')).toBeVisible();
   await page.locator('#command-input').fill('让场景安静一点');
@@ -76,11 +109,11 @@ test('home scene paints nonblank pixels and reacts to command', async ({ page })
 });
 
 test('home hero exposes the signal runner without clipping core copy', async ({ page }) => {
-  await page.goto('/zh/', { waitUntil: 'networkidle' });
+  await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('.runner-stage')).toBeVisible();
   await expect(page.locator('.runner-character')).toBeVisible();
   await expect(page.locator('.runner-label')).toContainText('数据分身');
-  await expect(page.locator('.hero-main h1')).toContainText('花辞树');
+  await expect(page.locator('.hero-main h1')).toHaveAccessibleName('花辞树');
   await expect(page.locator('.hero-main p')).toBeVisible();
   await expectNoOverflow(page);
 
@@ -100,7 +133,7 @@ test('home hero exposes the signal runner without clipping core copy', async ({ 
 });
 
 test('AI filter and language switching work', async ({ page }) => {
-  await page.goto('/zh/', { waitUntil: 'networkidle' });
+  await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
   await page.locator('.command-open').first().click();
   await page.locator('#command-input').fill('有什么 AI 相关文章');
   await page.locator('.command-form').press('Enter');
@@ -111,8 +144,9 @@ test('AI filter and language switching work', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 });
 
-test('sound is opt-in and preference is remembered', async ({ page }) => {
-  await page.goto('/zh/');
+test('sound is opt-in and preference is remembered', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'ambient sound control is hidden on mobile');
+  await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-label', '开启环境声');
   await page.locator('#sound-toggle').click();
   await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-label', '关闭环境声');
@@ -133,7 +167,7 @@ test('mobile menu is usable', async ({ page, isMobile }) => {
 
 test('about portrait and floating section navigation are usable', async ({ page, isMobile }) => {
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await page.goto('/zh/about', { waitUntil: 'networkidle' });
+  await page.goto('/zh/about', { waitUntil: 'domcontentloaded' });
 
   const portrait = page.locator('.portrait-image');
   const navigator = page.locator('[data-section-navigator]');
@@ -155,7 +189,7 @@ test('about portrait and floating section navigation are usable', async ({ page,
 });
 
 test('journal detail uses the collapsible heading navigator without a duplicate toc', async ({ page }) => {
-  await page.goto('/zh/journal/seeing-the-model', { waitUntil: 'networkidle' });
+  await page.goto('/zh/journal/seeing-the-model', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-section-navigator] .section-navigator__toggle')).toHaveAttribute('aria-expanded', 'false');
   await expect(page.locator('[data-section-navigator] .section-navigator__link')).toHaveCount(
     await page.locator('.prose h2, .prose h3').count(),

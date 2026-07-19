@@ -85,11 +85,11 @@ npm.cmd run test:e2e
 
 日常添加项目只需要执行项目清单检查。完整构建和浏览器测试仅在准备发布，或修改了网站公共组件时执行。
 
-## Windows npm 命令冲突记录
+## Windows npm 命令冲突记录（已解决）
 
 记录日期：`2026-07-19`
 
-当前机器执行裸命令 `npm` 时，PowerShell 会优先解析到：
+故障发生时，PowerShell 执行裸命令 `npm` 会优先解析到：
 
 ```text
 C:\Windows\System32\npm
@@ -103,7 +103,9 @@ C:\Windows\System32\npm
 D:\app\NodeJS\npm.cmd
 ```
 
-项目导入和清单校验优先直接运行 `node scripts/add-project.mjs`。确实需要 npm 脚本时必须使用 `npm.cmd`，不要使用裸命令 `npm`。
+该异常空文件已于 `2026-07-19` 移除。现在裸命令 `npm` 会正确解析到 `D:\app\NodeJS\npm.ps1`，`npm run project:check` 已恢复正常。
+
+项目导入和清单校验仍优先直接运行 `node scripts/add-project.mjs`，因为路径更直接。若 npm 命令再次无输出卡住，先运行下面的诊断命令，不要反复等待超时。
 
 诊断命令：
 

@@ -49,15 +49,29 @@ const copy = lang === 'zh'
             aria-hidden={slideIndex === 0 ? 'false' : 'true'}
             aria-label={`${slideIndex + 1} / ${slides.length} ${copy.slide}`}
           >
-            <Image
-              src={slide.src}
-              alt={slide.alt}
-              widths={[480, 760, 1080, 1448]}
-              sizes="(max-width: 720px) 92vw, (max-width: 1540px) 58vw, 820px"
-              loading={priority && slideIndex === 0 ? 'eager' : 'lazy'}
-              decoding="async"
-              quality={86}
-            />
+            {slideIndex === 0 ? (
+              <Image
+                src={slide.src}
+                alt={slide.alt}
+                widths={[480, 760, 1080, 1448]}
+                sizes="(max-width: 720px) 92vw, (max-width: 1540px) 58vw, 820px"
+                loading={priority ? 'eager' : 'lazy'}
+                decoding="async"
+                quality={86}
+              />
+            ) : (
+              <template data-carousel-image>
+                <Image
+                  src={slide.src}
+                  alt={slide.alt}
+                  widths={[480, 760, 1080, 1448]}
+                  sizes="(max-width: 720px) 92vw, (max-width: 1540px) 58vw, 820px"
+                  loading="eager"
+                  decoding="async"
+                  quality={86}
+                />
+              </template>
+            )}
           </figure>
         ))}
       </div>
@@ -138,6 +152,13 @@ const copy = lang === 'zh'
     let pointerStartX: number | null = null;
     let timer: number | undefined;
 
+    const loadSlide = (requestedIndex: number) => {
+      const slide = slides[(requestedIndex + slides.length) % slides.length];
+      const template = slide.querySelector<HTMLTemplateElement>('[data-carousel-image]');
+      if (!template) return;
+      template.replaceWith(template.content.cloneNode(true));
+    };
+
     const updatePauseState = () => {
       carousel.dataset.paused = String(userPaused);
       if (!toggle) return;
@@ -159,6 +180,7 @@ const copy = lang === 'zh'
 
     const showSlide = (requestedIndex: number, fromUser = false) => {
       activeIndex = (requestedIndex + slides.length) % slides.length;
+      loadSlide(activeIndex);
       slides.forEach((slide, slideIndex) => {
         const isActive = slideIndex === activeIndex;
         slide.classList.toggle('is-active', isActive);
@@ -167,6 +189,7 @@ const copy = lang === 'zh'
       if (current) current.textContent = String(activeIndex + 1).padStart(2, '0');
       if (fromUser) userPaused = true;
       updatePauseState();
+      loadSlide(activeIndex + 1);
       schedule();
     };
 
@@ -222,6 +245,7 @@ const copy = lang === 'zh'
     });
 
     updatePauseState();
+    loadSlide(1);
     schedule();
   });
 </script>

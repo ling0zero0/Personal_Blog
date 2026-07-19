@@ -20,8 +20,30 @@ const copy = lang === 'zh' ? { back: '全部文章', min: '分钟阅读', relate
 const sectionItems = headings
   .filter((heading) => heading.depth >= 2 && heading.depth <= 3)
   .map((heading) => ({ id: heading.slug, label: heading.text, depth: heading.depth }));
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = new URL('/og.svg', Astro.site);
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString(),
+  keywords: post.data.tags,
+  inLanguage: lang === 'zh' ? 'zh-CN' : 'en',
+  url: canonical.href,
+  image: socialImage.href,
+  author: { '@type': 'Person', name: '花辞树', url: new URL(`/${lang}/about`, Astro.site).href },
+};
 ---
-<BaseLayout title={`${post.data.title} — 花辞树`} description={post.data.description} lang={lang}>
+<BaseLayout
+  title={`${post.data.title} — 花辞树`}
+  description={post.data.description}
+  lang={lang}
+  contentType="article"
+  publishedDate={post.data.pubDate}
+  tags={post.data.tags}
+  jsonLd={jsonLd}
+>
   <SectionNavigator lang={lang} items={sectionItems} />
   <div class="reading-progress" role="progressbar" aria-label={copy.progress} aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
   <article class="article-shell">

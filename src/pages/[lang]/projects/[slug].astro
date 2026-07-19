@@ -23,8 +23,28 @@ const sectionItems = lang === 'zh'
       { id: 'project-context', label: 'Project background' },
       { id: 'next-project', label: 'Next project' },
     ];
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = project.poster?.src;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CreativeWork',
+  name: project.title[lang],
+  description: project.description[lang],
+  dateCreated: project.year,
+  keywords: project.tags,
+  inLanguage: lang === 'zh' ? 'zh-CN' : 'en',
+  url: canonical.href,
+  ...(socialImage ? { image: new URL(socialImage.src, Astro.site).href } : {}),
+  creator: { '@type': 'Person', name: '花辞树', url: new URL(`/${lang}/about`, Astro.site).href },
+};
 ---
-<BaseLayout title={`${project.title[lang]} — 花辞树`} description={project.description[lang]} lang={lang}>
+<BaseLayout
+  title={`${project.title[lang]} — 花辞树`}
+  description={project.description[lang]}
+  lang={lang}
+  image={socialImage}
+  jsonLd={jsonLd}
+>
   <SectionNavigator lang={lang} items={sectionItems} />
   <header id="project-overview" class="project-hero" data-file={`FILE / ${project.index}`} data-section-anchor>
     <div class="project-stage container">
@@ -79,11 +99,11 @@ const sectionItems = lang === 'zh'
   .stage-topline { position: relative; z-index: 5; grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; padding-bottom: 18px; border-bottom: 1px solid #ffffff66; }
   .back-link { display: flex; gap: 8px; align-items: center; width: max-content; color: inherit; }
   .stage-status { color: #ffffffaa; }
-  .project-heading { position: relative; z-index: 4; grid-column: 1 / 10; grid-row: 2; align-self: center; pointer-events: none; }
+  .project-heading { position: relative; z-index: 4; grid-column: 1 / 6; grid-row: 2; align-self: center; min-width: 0; max-width: 640px; padding-right: clamp(8px, 1.5vw, 24px); pointer-events: none; }
   .project-kicker { display: flex; gap: 28px; margin-bottom: clamp(28px, 5vh, 60px); color: #fff; }
-  .project-heading h1 { width: 100%; margin: 0; font-size: clamp(72px, 8vw, 116px); font-weight: 650; overflow-wrap: break-word; word-break: normal; text-wrap: balance; text-shadow: 10px 12px 0 #0b0c0b, 20px 22px 0 color-mix(in srgb, var(--section-color) 55%, #0b0c0b); }
-  :global(html[lang='zh']) .project-heading h1 { line-height: 1; letter-spacing: -.045em; }
-  :global(html[lang='en']) .project-heading h1 { line-height: .9; letter-spacing: -.055em; }
+  .project-heading h1 { width: 100%; margin: 0; font-size: clamp(52px, 5.4vw, 86px); font-weight: 650; letter-spacing: 0; overflow-wrap: break-word; word-break: normal; text-wrap: balance; text-shadow: 6px 7px 0 #0b0c0b, 11px 13px 0 color-mix(in srgb, var(--section-color) 55%, #0b0c0b); }
+  :global(html[lang='zh']) .project-heading h1 { line-height: 1.04; letter-spacing: 0; }
+  :global(html[lang='en']) .project-heading h1 { line-height: .96; letter-spacing: 0; }
   .project-visual-frame { position: relative; z-index: 2; grid-column: 6 / -1; grid-row: 2; align-self: center; margin: 24px 1vw 10px 0; transform: rotateY(-8deg) rotateZ(2.5deg) translateZ(-20px); transform-origin: right center; box-shadow: -28px 34px 0 color-mix(in srgb, var(--section-color) 78%, #050505), -48px 55px 70px #000a; }
   .project-visual-frame::before { content: ''; position: absolute; z-index: 3; inset: -13px; border: 1px solid #ffffff99; pointer-events: none; }
   .project-visual-frame :global(.project-visual) { height: clamp(390px, 48vw, 680px); min-height: 0; }
@@ -99,15 +119,20 @@ const sectionItems = lang === 'zh'
   .next-inner { display: flex; justify-content: space-between; align-items: end; gap: 30px; }
   .next-inner .eyebrow { color: color-mix(in srgb, var(--bg) 60%, transparent); }
   .next-inner h2 { margin: 28px 0 0; font-size: clamp(52px, 6vw, 72px); line-height: .94; font-weight: 500; overflow-wrap: break-word; word-break: normal; }
+  @media (min-width: 721px) and (max-width: 1100px) {
+    .project-heading { padding-right: 8px; }
+    .project-kicker { flex-wrap: wrap; gap: 10px 18px; margin-bottom: 28px; font-size: 11px; }
+    .project-heading h1 { font-size: clamp(48px, 6vw, 64px); }
+  }
   @media (max-width: 720px) {
     .project-hero { min-height: 0; background: linear-gradient(168deg, var(--section-color) 0 38%, #0b0c0b 38.2% 100%); }
     .project-stage { min-height: 100svh; padding-top: calc(var(--header-h) + 26px); padding-bottom: 62px; display: flex; flex-direction: column; }
     .stage-status { display: none; }
-    .project-heading { width: 100%; margin: clamp(48px, 8vh, 76px) 0 12px; }
+    .project-heading { width: 100%; max-width: none; margin: clamp(48px, 8vh, 76px) 0 12px; padding-right: 0; }
     .project-kicker { flex-wrap: wrap; gap: 10px 18px; margin-bottom: 26px; font-size: 11px; }
     .project-heading h1 { font-size: clamp(46px, 14.5vw, 64px); text-shadow: 6px 7px 0 #0b0c0b, 11px 13px 0 color-mix(in srgb, var(--section-color) 58%, #0b0c0b); }
-    :global(html[lang='zh']) .project-heading h1 { line-height: 1.02; letter-spacing: -.04em; }
-    :global(html[lang='en']) .project-heading h1 { line-height: .92; letter-spacing: -.045em; }
+    :global(html[lang='zh']) .project-heading h1 { line-height: 1.02; letter-spacing: 0; }
+    :global(html[lang='en']) .project-heading h1 { line-height: .92; letter-spacing: 0; }
     .project-visual-frame { width: 92%; margin: 0 0 0 auto; transform: rotateZ(2deg); box-shadow: -13px 17px 0 color-mix(in srgb, var(--section-color) 78%, #050505); }
     .project-visual-frame::before { inset: -7px; }
     .project-visual-frame :global(.project-visual) { height: min(76vw, 430px); min-height: 300px; }

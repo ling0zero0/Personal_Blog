@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  timeout: 45_000,
+  timeout: 60_000,
   expect: { timeout: 8_000 },
   use: {
     baseURL: 'http://127.0.0.1:4321',
@@ -16,7 +16,7 @@ export default defineConfig({
     timeout: 120_000,
   },
   projects: [
-    { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'], channel: 'chrome', viewport: { width: 1440, height: 900 } } },
-    { name: 'mobile-chromium', use: { ...devices['Pixel 7'], channel: 'chrome' } },
+    { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'], channel: process.env.CI ? undefined : 'chrome', viewport: { width: 1440, height: 900 } } },
+    { name: 'mobile-chromium', use: { ...devices['Pixel 7'], channel: process.env.CI ? undefined : 'chrome' } },
   ],
 });

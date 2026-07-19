@@ -15,14 +15,25 @@ export class DataSculpture {
   private scatter = 0;
   private reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   private mobile = innerWidth < 720;
-  private visible = true;
+  private documentVisible = !document.hidden;
+  private intersecting = true;
+  private initialized = false;
+  private disposed = false;
+  private frame: number | undefined;
+  private scatterTimer: number | undefined;
+  private intersectionObserver?: IntersectionObserver;
+  private removalObserver?: MutationObserver;
 
   constructor(host: HTMLElement) { this.host = host; }
 
+  get element() { return this.host; }
+
   init() {
+    if (this.initialized || this.disposed) return;
     try {
       this.renderer = new THREE.WebGLRenderer({ antialias: !this.mobile, alpha: true, powerPreference: this.mobile ? 'low-power' : 'high-performance' });
     } catch { this.fallback(); return; }
+    this.initialized = true;
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.mobile ? 1.35 : 1.8));
     this.renderer.setClearColor(0x000000, 0); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.domElement.setAttribute('aria-hidden', 'true'); this.host.appendChild(this.renderer.domElement);
@@ -32,7 +43,20 @@ export class DataSculpture {
     addEventListener('scroll', this.onScroll, { passive: true }); document.addEventListener('visibilitychange', this.onVisibility);
     addEventListener('scene-command', this.onCommand as EventListener);
     if (this.mobile) this.host.addEventListener('touchmove', this.onTouch, { passive: true });
-    this.host.dataset.rendered = 'true'; this.animate();
+    if ('IntersectionObserver' in window) {
+      this.intersectionObserver = new IntersectionObserver(([entry]) => {
+        this.intersecting = entry.isIntersecting;
+        this.updateAnimation();
+      });
+      this.intersectionObserver.observe(this.host);
+    } else {
+      this.intersecting = true;
+    }
+    this.removalObserver = new MutationObserver(() => {
+      if (!this.host.isConnected) this.destroy();
+    });
+    this.removalObserver.observe(document.body, { childList: true, subtree: true });
+    this.host.dataset.rendered = 'true'; this.updateAnimation();
   }
 
   private createGeometry() {
@@ -64,12 +88,22 @@ export class DataSculpture {
   private onPointer = (e: PointerEvent) => { this.targetPointer.set((e.clientX / innerWidth - .5) * 2, (e.clientY / innerHeight - .5) * 2); };
   private onTouch = (e: TouchEvent) => { const t = e.touches[0]; if (t) this.targetPointer.set((t.clientX / innerWidth - .5) * 1.4, (t.clientY / innerHeight - .5) * 1.4); };
   private onScroll = () => { this.scroll = Math.min(scrollY / innerHeight, 1.8); };
-  private onVisibility = () => { this.visible = !document.hidden; if (this.visible) this.animate(); };
-  private onCommand = (e: CustomEvent<string>) => { if (e.detail === 'calm') this.speed = .2; if (e.detail === 'focus') { this.scatter = -.45; this.speed = .55; } if (e.detail === 'scatter') { this.scatter = 1.2; setTimeout(() => this.scatter = 0, 2200); } };
+  private onVisibility = () => { this.documentVisible = !document.hidden; this.updateAnimation(); };
+  private onCommand = (e: CustomEvent<string>) => { if (e.detail === 'calm') this.speed = .2; if (e.detail === 'focus') { this.scatter = -.45; this.speed = .55; } if (e.detail === 'scatter') { this.scatter = 1.2; window.clearTimeout(this.scatterTimer); this.scatterTimer = window.setTimeout(() => this.scatter = 0, 2200); } };
   private fallback() { this.host.classList.add('scene-fallback'); this.host.dataset.rendered = 'fallback'; }
 
+  private updateAnimation() {
+    if (this.disposed || !this.initialized || !this.documentVisible || !this.intersecting) {
+      if (this.frame !== undefined) cancelAnimationFrame(this.frame);
+      this.frame = undefined;
+      return;
+    }
+    if (this.frame === undefined) this.animate();
+  }
+
   private animate = () => {
-    if (!this.visible) return; requestAnimationFrame(this.animate);
+    this.frame = undefined;
+    if (this.disposed || !this.documentVisible || !this.intersecting) return;
     const t = performance.now() * .00018 * (this.reduced ? .08 : this.speed);
     this.pointer.lerp(this.targetPointer, .035);
     this.group.rotation.y = t + this.pointer.x * .18 + this.scroll * .48;
@@ -79,5 +113,29 @@ export class DataSculpture {
     this.camera.position.y += (-this.pointer.y * .28 - this.scroll * .45 - this.camera.position.y) * .025;
     this.camera.lookAt(0, -this.scroll * .22, 0); this.lines.rotation.y = -t * .7;
     this.renderer.render(this.scene, this.camera);
+    if (this.host.dataset.painted !== 'true') this.host.dataset.painted = 'true';
+    this.frame = requestAnimationFrame(this.animate);
   };
+
+  destroy() {
+    if (this.disposed) return;
+    this.disposed = true;
+    if (this.frame !== undefined) cancelAnimationFrame(this.frame);
+    window.clearTimeout(this.scatterTimer);
+    this.intersectionObserver?.disconnect();
+    this.removalObserver?.disconnect();
+    removeEventListener('resize', this.resize);
+    removeEventListener('pointermove', this.onPointer);
+    removeEventListener('scroll', this.onScroll);
+    document.removeEventListener('visibilitychange', this.onVisibility);
+    removeEventListener('scene-command', this.onCommand as EventListener);
+    this.host.removeEventListener('touchmove', this.onTouch);
+    this.particles?.geometry.dispose();
+    (this.particles?.material as THREE.Material | undefined)?.dispose();
+    this.lines?.geometry.dispose();
+    (this.lines?.material as THREE.Material | undefined)?.dispose();
+    this.renderer?.dispose();
+    this.renderer?.domElement.remove();
+    this.scene.clear();
+  }
 }

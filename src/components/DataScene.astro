@@ -3,9 +3,45 @@
   <div class="scene-status mono"><span class="scene-live"></span><span>GENERATIVE FIELD / LIVE</span></div>
 </div>
 <script>
-  const host = document.querySelector<HTMLElement>('#data-scene');
-  if (host && 'WebGLRenderingContext' in window) import('../scenes/DataSculpture').then(({ DataSculpture }) => new DataSculpture(host).init());
-  else if (host) { host.classList.add('scene-fallback'); host.dataset.rendered = 'fallback'; }
+  import type { DataSculpture } from '../scenes/DataSculpture';
+
+  let sculpture: DataSculpture | undefined;
+  let pendingHost: HTMLElement | undefined;
+
+  const initializeScene = async () => {
+    const host = document.querySelector<HTMLElement>('#data-scene');
+    if (!host || host === pendingHost || host === sculpture?.element) return;
+    sculpture?.destroy();
+    sculpture = undefined;
+    pendingHost = host;
+
+    if (!('WebGLRenderingContext' in window)) {
+      host.classList.add('scene-fallback');
+      host.dataset.rendered = 'fallback';
+      pendingHost = undefined;
+      return;
+    }
+
+    try {
+      const { DataSculpture } = await import('../scenes/DataSculpture');
+      if (pendingHost !== host || !host.isConnected) return;
+      sculpture = new DataSculpture(host);
+      sculpture.init();
+    } catch {
+      host.classList.add('scene-fallback');
+      host.dataset.rendered = 'fallback';
+    } finally {
+      if (pendingHost === host) pendingHost = undefined;
+    }
+  };
+
+  initializeScene();
+  document.addEventListener('astro:page-load', initializeScene);
+  document.addEventListener('astro:before-swap', () => {
+    pendingHost = undefined;
+    sculpture?.destroy();
+    sculpture = undefined;
+  });
 </script>
 <style>
   .data-scene { position: absolute; inset: 0; overflow: hidden; background: #0a0a09; }
