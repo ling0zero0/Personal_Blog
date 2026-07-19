@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+export type SceneQuality = 'medium' | 'high';
+
 export class DataSculpture {
   private host: HTMLElement;
   private renderer!: THREE.WebGLRenderer;
@@ -8,6 +10,7 @@ export class DataSculpture {
   private group = new THREE.Group();
   private particles!: THREE.Points;
   private lines!: THREE.LineSegments;
+  private targetScale = new THREE.Vector3(1, 1, 1);
   private pointer = new THREE.Vector2();
   private targetPointer = new THREE.Vector2();
   private scroll = 0;
@@ -19,24 +22,31 @@ export class DataSculpture {
   private intersecting = true;
   private initialized = false;
   private disposed = false;
+  private lastFrameTime = 0;
+  private frameInterval: number;
   private frame: number | undefined;
   private scatterTimer: number | undefined;
   private intersectionObserver?: IntersectionObserver;
   private removalObserver?: MutationObserver;
 
-  constructor(host: HTMLElement) { this.host = host; }
+  constructor(host: HTMLElement, private quality: SceneQuality = 'high') {
+    this.host = host;
+    this.frameInterval = quality === 'medium' ? 1000 / 30 : 0;
+  }
 
   get element() { return this.host; }
 
   init() {
     if (this.initialized || this.disposed) return;
     try {
-      this.renderer = new THREE.WebGLRenderer({ antialias: !this.mobile, alpha: true, powerPreference: this.mobile ? 'low-power' : 'high-performance' });
+      this.renderer = new THREE.WebGLRenderer({ antialias: this.quality === 'high' && !this.mobile, alpha: true, powerPreference: this.quality === 'medium' ? 'low-power' : 'high-performance' });
     } catch { this.fallback(); return; }
     this.initialized = true;
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.mobile ? 1.35 : 1.8));
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === 'medium' ? 1.25 : this.mobile ? 1.35 : 1.8));
     this.renderer.setClearColor(0x000000, 0); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.domElement.setAttribute('aria-hidden', 'true'); this.host.appendChild(this.renderer.domElement);
+    this.renderer.domElement.setAttribute('aria-hidden', 'true');
+    this.renderer.domElement.addEventListener('webglcontextlost', this.onContextLost);
+    this.host.appendChild(this.renderer.domElement);
     this.camera.position.set(0, 0, 8.5); this.scene.add(this.group);
     this.createGeometry(); this.resize();
     addEventListener('resize', this.resize); addEventListener('pointermove', this.onPointer, { passive: true });
@@ -60,7 +70,7 @@ export class DataSculpture {
   }
 
   private createGeometry() {
-    const count = this.mobile ? 900 : 2600;
+    const count = this.quality === 'medium' ? (this.mobile ? 650 : 1400) : (this.mobile ? 900 : 2600);
     const positions = new Float32Array(count * 3); const colors = new Float32Array(count * 3);
     const palette = [new THREE.Color('#f1efe6'), new THREE.Color('#ff4d24'), new THREE.Color('#20aa89'), new THREE.Color('#e8b62c')];
     for (let i = 0; i < count; i++) {
@@ -89,6 +99,11 @@ export class DataSculpture {
   private onTouch = (e: TouchEvent) => { const t = e.touches[0]; if (t) this.targetPointer.set((t.clientX / innerWidth - .5) * 1.4, (t.clientY / innerHeight - .5) * 1.4); };
   private onScroll = () => { this.scroll = Math.min(scrollY / innerHeight, 1.8); };
   private onVisibility = () => { this.documentVisible = !document.hidden; this.updateAnimation(); };
+  private onContextLost = (event: Event) => {
+    event.preventDefault();
+    this.fallback();
+    this.destroy();
+  };
   private onCommand = (e: CustomEvent<string>) => { if (e.detail === 'calm') this.speed = .2; if (e.detail === 'focus') { this.scatter = -.45; this.speed = .55; } if (e.detail === 'scatter') { this.scatter = 1.2; window.clearTimeout(this.scatterTimer); this.scatterTimer = window.setTimeout(() => this.scatter = 0, 2200); } };
   private fallback() { this.host.classList.add('scene-fallback'); this.host.dataset.rendered = 'fallback'; }
 
@@ -98,24 +113,37 @@ export class DataSculpture {
       this.frame = undefined;
       return;
     }
-    if (this.frame === undefined) this.animate();
+    if (this.reduced) {
+      this.renderFrame(performance.now());
+      return;
+    }
+    if (this.frame === undefined) this.frame = requestAnimationFrame(this.animate);
   }
 
-  private animate = () => {
+  private animate = (time: number) => {
     this.frame = undefined;
     if (this.disposed || !this.documentVisible || !this.intersecting) return;
-    const t = performance.now() * .00018 * (this.reduced ? .08 : this.speed);
+    if (this.frameInterval && time - this.lastFrameTime < this.frameInterval) {
+      this.frame = requestAnimationFrame(this.animate);
+      return;
+    }
+    this.renderFrame(time);
+    this.frame = requestAnimationFrame(this.animate);
+  };
+
+  private renderFrame(time: number) {
+    this.lastFrameTime = time;
+    const t = time * .00018 * (this.reduced ? .08 : this.speed);
     this.pointer.lerp(this.targetPointer, .035);
     this.group.rotation.y = t + this.pointer.x * .18 + this.scroll * .48;
     this.group.rotation.x = -.15 + this.pointer.y * .12 + this.scroll * .14;
-    const targetScale = 1 + this.scatter; this.group.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), .025);
+    const targetScale = 1 + this.scatter; this.targetScale.setScalar(targetScale); this.group.scale.lerp(this.targetScale, .025);
     this.camera.position.x += (this.pointer.x * .45 - this.camera.position.x) * .025;
     this.camera.position.y += (-this.pointer.y * .28 - this.scroll * .45 - this.camera.position.y) * .025;
     this.camera.lookAt(0, -this.scroll * .22, 0); this.lines.rotation.y = -t * .7;
     this.renderer.render(this.scene, this.camera);
     if (this.host.dataset.painted !== 'true') this.host.dataset.painted = 'true';
-    this.frame = requestAnimationFrame(this.animate);
-  };
+  }
 
   destroy() {
     if (this.disposed) return;
@@ -130,6 +158,7 @@ export class DataSculpture {
     document.removeEventListener('visibilitychange', this.onVisibility);
     removeEventListener('scene-command', this.onCommand as EventListener);
     this.host.removeEventListener('touchmove', this.onTouch);
+    this.renderer?.domElement.removeEventListener('webglcontextlost', this.onContextLost);
     this.particles?.geometry.dispose();
     (this.particles?.material as THREE.Material | undefined)?.dispose();
     this.lines?.geometry.dispose();

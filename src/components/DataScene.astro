@@ -3,21 +3,43 @@
   <div class="scene-status mono"><span class="scene-live"></span><span>GENERATIVE FIELD / LIVE</span></div>
 </div>
 <script>
-  import type { DataSculpture } from '../scenes/DataSculpture';
+  import type { DataSculpture, SceneQuality } from '../scenes/DataSculpture';
 
   let sculpture: DataSculpture | undefined;
   let pendingHost: HTMLElement | undefined;
+  let idleHandle: number | undefined;
+  let timeoutHandle: number | undefined;
+  let loadHandler: (() => void) | undefined;
 
-  const initializeScene = async () => {
-    const host = document.querySelector<HTMLElement>('#data-scene');
-    if (!host || host === pendingHost || host === sculpture?.element) return;
-    sculpture?.destroy();
-    sculpture = undefined;
-    pendingHost = host;
+  const showFallback = (host: HTMLElement) => {
+    host.classList.add('scene-fallback');
+    host.dataset.rendered = 'fallback';
+  };
 
+  const getSceneQuality = (): SceneQuality | 'fallback' => {
+    const nav = navigator as Navigator & {
+      deviceMemory?: number;
+      connection?: { saveData?: boolean };
+    };
+    const cores = nav.hardwareConcurrency || 4;
+    const memory = nav.deviceMemory || 4;
+
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || nav.connection?.saveData || cores <= 2 || memory <= 2) return 'fallback';
+    return cores <= 4 || memory <= 4 || innerWidth < 1024 ? 'medium' : 'high';
+  };
+
+  const cancelPending = () => {
+    if (idleHandle !== undefined && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle);
+    if (timeoutHandle !== undefined) window.clearTimeout(timeoutHandle);
+    if (loadHandler) removeEventListener('load', loadHandler);
+    idleHandle = undefined;
+    timeoutHandle = undefined;
+    loadHandler = undefined;
+  };
+
+  const initializeScene = async (host: HTMLElement, quality: SceneQuality) => {
     if (!('WebGLRenderingContext' in window)) {
-      host.classList.add('scene-fallback');
-      host.dataset.rendered = 'fallback';
+      showFallback(host);
       pendingHost = undefined;
       return;
     }
@@ -25,19 +47,53 @@
     try {
       const { DataSculpture } = await import('../scenes/DataSculpture');
       if (pendingHost !== host || !host.isConnected) return;
-      sculpture = new DataSculpture(host);
+      sculpture = new DataSculpture(host, quality);
       sculpture.init();
     } catch {
-      host.classList.add('scene-fallback');
-      host.dataset.rendered = 'fallback';
+      sculpture?.destroy();
+      sculpture = undefined;
+      showFallback(host);
     } finally {
       if (pendingHost === host) pendingHost = undefined;
     }
   };
 
-  initializeScene();
-  document.addEventListener('astro:page-load', initializeScene);
+  const scheduleScene = () => {
+    const host = document.querySelector<HTMLElement>('#data-scene');
+    if (!host || host === pendingHost || host === sculpture?.element) return;
+    cancelPending();
+    sculpture?.destroy();
+    sculpture = undefined;
+
+    const quality = getSceneQuality();
+    host.dataset.quality = quality;
+    if (quality === 'fallback') {
+      showFallback(host);
+      return;
+    }
+
+    pendingHost = host;
+    const queueDuringIdle = () => {
+      loadHandler = undefined;
+      if (!host.isConnected || pendingHost !== host) return;
+      if ('requestIdleCallback' in window) {
+        idleHandle = window.requestIdleCallback(() => initializeScene(host, quality), { timeout: 2500 });
+      } else {
+        timeoutHandle = setTimeout(() => initializeScene(host, quality), 200);
+      }
+    };
+
+    if (document.readyState === 'complete') queueDuringIdle();
+    else {
+      loadHandler = queueDuringIdle;
+      addEventListener('load', loadHandler, { once: true });
+    }
+  };
+
+  scheduleScene();
+  document.addEventListener('astro:page-load', scheduleScene);
   document.addEventListener('astro:before-swap', () => {
+    cancelPending();
     pendingHost = undefined;
     sculpture?.destroy();
     sculpture = undefined;
@@ -52,7 +108,9 @@
   .scene-fallback-art span:nth-child(2) { --r: 72deg; width: min(42vw, 490px); border-color: #ff4d2444; }
   .scene-fallback-art span:nth-child(3) { --r: 130deg; width: min(30vw, 360px); border-color: #20aa8955; }
   .data-scene[data-rendered='true'] .scene-fallback-art { opacity: 0; }
+  .data-scene[data-rendered='fallback'] .scene-live { animation: none; opacity: .45; }
   .scene-status { position: absolute; right: var(--pad); bottom: 28px; z-index: 2; display: flex; gap: 9px; align-items: center; color: #ffffff8a; }
   .scene-live { width: 6px; height: 6px; border-radius: 50%; background: #59d5af; box-shadow: 0 0 10px #59d5af; animation: pulse 2s infinite; }
   @keyframes pulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { .scene-live { animation: none; } }
 </style>

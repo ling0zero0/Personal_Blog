@@ -56,6 +56,7 @@ const copy = lang === 'zh'
                 widths={[480, 760, 1080, 1448]}
                 sizes="(max-width: 720px) 92vw, (max-width: 1540px) 58vw, 820px"
                 loading={priority ? 'eager' : 'lazy'}
+                fetchpriority={priority ? 'high' : undefined}
                 decoding="async"
                 quality={86}
               />
@@ -137,20 +138,39 @@ const copy = lang === 'zh'
 </style>
 <script>
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const mobileViewport = matchMedia('(max-width: 720px)');
+  const carouselCleanups = new Map<HTMLElement, () => void>();
 
-  document.querySelectorAll<HTMLElement>('[data-project-carousel]').forEach((carousel) => {
+  const initializeCarousel = (carousel: HTMLElement) => {
+    if (carouselCleanups.has(carousel)) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
     const slides = Array.from(carousel.querySelectorAll<HTMLElement>('[data-carousel-slide]'));
     const previous = carousel.querySelector<HTMLButtonElement>('[data-carousel-previous]');
     const next = carousel.querySelector<HTMLButtonElement>('[data-carousel-next]');
     const toggle = carousel.querySelector<HTMLButtonElement>('[data-carousel-toggle]');
     const current = carousel.querySelector<HTMLElement>('[data-carousel-current]');
     const wantsAutoplay = carousel.dataset.autoplay === 'true';
+    const connection = (navigator as Navigator & {
+      connection?: EventTarget & { saveData?: boolean; effectiveType?: string };
+    }).connection;
+    const constrainedNetwork = Boolean(
+      connection?.saveData || connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g',
+    );
+    const conserveResources = constrainedNetwork || mobileViewport.matches;
     let activeIndex = 0;
-    let userPaused = reducedMotion.matches || !wantsAutoplay;
+    let userPaused = reducedMotion.matches || conserveResources || !wantsAutoplay;
     let hovering = false;
     let focused = false;
+    let inViewport = false;
+    let prefetched = false;
+    let backgroundLoadingReady = false;
     let pointerStartX: number | null = null;
     let timer: number | undefined;
+    let idleHandle: number | undefined;
+    let lcpTimer: number | undefined;
+    let lcpObserver: PerformanceObserver | undefined;
 
     const loadSlide = (requestedIndex: number) => {
       const slide = slides[(requestedIndex + slides.length) % slides.length];
@@ -171,7 +191,7 @@ const copy = lang === 'zh'
 
     const schedule = () => {
       window.clearTimeout(timer);
-      if (!wantsAutoplay || userPaused || hovering || focused || document.hidden) return;
+      if (!wantsAutoplay || userPaused || hovering || focused || document.hidden || !inViewport || !backgroundLoadingReady) return;
       timer = window.setTimeout(() => {
         showSlide(activeIndex + 1);
         schedule();
@@ -189,44 +209,98 @@ const copy = lang === 'zh'
       if (current) current.textContent = String(activeIndex + 1).padStart(2, '0');
       if (fromUser) userPaused = true;
       updatePauseState();
-      loadSlide(activeIndex + 1);
       schedule();
     };
 
-    previous?.addEventListener('click', () => showSlide(activeIndex - 1, true));
-    next?.addEventListener('click', () => showSlide(activeIndex + 1, true));
+    const queuePrefetch = () => {
+      if (prefetched || conserveResources || !inViewport) return;
+      prefetched = true;
+      if (backgroundLoadingReady) {
+        loadSlide(1);
+        schedule();
+        return;
+      }
+
+      const loadWhenIdle = () => {
+        lcpObserver?.disconnect();
+        window.clearTimeout(lcpTimer);
+        const load = () => {
+          idleHandle = undefined;
+          if (!carousel.isConnected) return;
+          backgroundLoadingReady = true;
+          if (inViewport) loadSlide(1);
+          else prefetched = false;
+          schedule();
+        };
+        if ('requestIdleCallback' in window) {
+          idleHandle = window.requestIdleCallback(load, { timeout: 2000 });
+        } else {
+          idleHandle = globalThis.setTimeout(load, 200);
+        }
+      };
+
+      const waitForLcp = () => {
+        if (!('PerformanceObserver' in window)) {
+          loadWhenIdle();
+          return;
+        }
+        try {
+          lcpObserver = new PerformanceObserver((list) => {
+            if (list.getEntries().length) loadWhenIdle();
+          });
+          lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+          lcpTimer = window.setTimeout(loadWhenIdle, 1500);
+        } catch {
+          loadWhenIdle();
+        }
+      };
+
+      if (document.readyState === 'complete') waitForLcp();
+      else window.addEventListener('load', waitForLcp, { once: true, signal });
+    };
+
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      inViewport = entry.isIntersecting;
+      if (inViewport) queuePrefetch();
+      schedule();
+    }, { rootMargin: '120px 0px' });
+    intersectionObserver.observe(carousel);
+
+    previous?.addEventListener('click', () => showSlide(activeIndex - 1, true), { signal });
+    next?.addEventListener('click', () => showSlide(activeIndex + 1, true), { signal });
     toggle?.addEventListener('click', () => {
       userPaused = !userPaused;
+      if (!userPaused) backgroundLoadingReady = true;
       updatePauseState();
       schedule();
-    });
+    }, { signal });
     carousel.addEventListener('pointerenter', () => {
       hovering = true;
       schedule();
-    });
+    }, { signal });
     carousel.addEventListener('pointerleave', () => {
       hovering = false;
       pointerStartX = null;
       schedule();
-    });
+    }, { signal });
     carousel.addEventListener('focusin', () => {
       focused = true;
       schedule();
-    });
+    }, { signal });
     carousel.addEventListener('focusout', (event) => {
       focused = carousel.contains(event.relatedTarget as Node | null);
       schedule();
-    });
+    }, { signal });
     carousel.addEventListener('pointerdown', (event) => {
       if (event.pointerType !== 'mouse') pointerStartX = event.clientX;
-    });
+    }, { signal });
     carousel.addEventListener('pointerup', (event) => {
       if (pointerStartX === null) return;
       const distance = event.clientX - pointerStartX;
       pointerStartX = null;
       if (Math.abs(distance) < 48) return;
       showSlide(activeIndex + (distance < 0 ? 1 : -1), true);
-    });
+    }, { signal });
     carousel.addEventListener('keydown', (event) => {
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
@@ -236,16 +310,42 @@ const copy = lang === 'zh'
         event.preventDefault();
         showSlide(activeIndex + 1, true);
       }
-    });
-    document.addEventListener('visibilitychange', schedule);
+    }, { signal });
+    document.addEventListener('visibilitychange', schedule, { signal });
     reducedMotion.addEventListener('change', (event) => {
       if (event.matches) userPaused = true;
       updatePauseState();
       schedule();
-    });
+    }, { signal });
 
     updatePauseState();
-    loadSlide(1);
     schedule();
+
+    const cleanup = () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(lcpTimer);
+      if (idleHandle !== undefined) {
+        if ('cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle);
+        else globalThis.clearTimeout(idleHandle);
+      }
+      lcpObserver?.disconnect();
+      intersectionObserver.disconnect();
+      controller.abort();
+      carouselCleanups.delete(carousel);
+    };
+    carouselCleanups.set(carousel, cleanup);
+  };
+
+  const initializeCarousels = () => {
+    document.querySelectorAll<HTMLElement>('[data-project-carousel]').forEach(initializeCarousel);
+  };
+
+  initializeCarousels();
+  document.addEventListener('astro:page-load', initializeCarousels);
+  document.addEventListener('astro:before-swap', () => {
+    carouselCleanups.forEach((cleanup) => cleanup());
+  });
+  window.addEventListener('pagehide', () => {
+    carouselCleanups.forEach((cleanup) => cleanup());
   });
 </script>

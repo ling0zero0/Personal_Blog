@@ -174,21 +174,13 @@ const sectionItems = lang === 'zh'
   const hero = document.querySelector<HTMLElement>('.hero');
   if (!reduceMotion) {
     const name = document.querySelector<HTMLElement>('.name-cards');
-    const nameCards = gsap.utils.toArray<HTMLElement>('.name-card');
+    name?.classList.add('is-live');
     const heroTimeline = gsap.timeline({
       defaults: { ease: 'power4.out' },
-      onStart: () => name?.classList.remove('is-live'),
-      onComplete: () => name?.classList.add('is-live'),
     });
     heroTimeline
-      .from('.runner-stage', { xPercent: 18, opacity: 0, duration: 1.05 }, .1)
-      .fromTo(nameCards,
-        { z: (index) => [-520, -760, -610][index], x: (index) => [-105, 0, 110][index], y: (index) => [48, -30, 56][index], rotateY: (index) => [30, -8, -28][index], rotateX: (index) => [-12, 16, -8][index], rotateZ: (index) => [-9, 5, 10][index], scale: .42, opacity: 0, filter: 'blur(14px)' },
-        { z: 0, x: 0, y: (index) => [0, 9, 2][index], rotateY: 0, rotateX: 0, rotateZ: (index) => [-1.5, .8, 1.4][index], scale: 1, opacity: 1, filter: 'blur(0px)', stagger: .14, duration: 1.18 }, .12)
-      .to(nameCards, { scale: 1.035, duration: .12, stagger: .06, ease: 'power2.out' }, .98)
-      .to(nameCards, { scale: 1, duration: .28, stagger: .06, ease: 'back.out(2)' }, 1.1)
-      .from('.runner-label, .hero-main p', { x: -24, opacity: 0, stagger: .12, duration: .7 }, .58)
-      .from('.hero-top, .scroll-cue, .scene-keys', { opacity: 0, duration: .6 }, .72);
+      .from('.runner-stage', { xPercent: 12, duration: 1.05 }, .1)
+      .from('.runner-label', { x: -18, duration: .65 }, .28);
     ScrollTrigger.create({
       trigger: '.hero',
       start: 'top 65%',

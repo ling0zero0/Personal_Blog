@@ -5,7 +5,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageIntro from '../../components/PageIntro.astro';
 import SectionNavigator from '../../components/SectionNavigator.astro';
 import SignalBand from '../../components/SignalBand.astro';
-import avatar from '../../assets/images/about/avatar.webp.png';
+import avatar from '../../assets/images/about/avatar.webp';
 import { locales, profile, experience, type Locale } from '../../data/site';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
 const lang = Astro.params.lang as Locale;
@@ -62,7 +62,16 @@ const navigatorItems = [
         <span class="mono">IDENTITY / ACTIVE</span>
       </div>
       <figure class="portrait-frame">
-        <Image class="portrait-image" src={avatar} alt={copy.portraitAlt} loading="lazy" quality={90} />
+        <Image
+          class="portrait-image"
+          src={avatar}
+          alt={copy.portraitAlt}
+          widths={[400, 640, 820, 1254]}
+          sizes="(max-width: 720px) calc(100vw - 42px), min(72vw, 820px)"
+          loading="lazy"
+          decoding="async"
+          quality={88}
+        />
       </figure>
     </div>
   </section>

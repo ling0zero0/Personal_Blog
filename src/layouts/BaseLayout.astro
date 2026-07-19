@@ -55,6 +55,7 @@ const section = ['projects', 'journal', 'about'].includes(route) ? route : 'home
     {hasLocalizedPath && <link rel="alternate" hreflang="x-default" href={localizedUrls.find(({ locale }) => locale === 'en')?.url} />}
     <link rel="alternate" type="application/rss+xml" title="花辞树 / Huacishu Journal" href={new URL('/rss.xml', site)} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
     <meta property="og:type" content={contentType} />
     <meta property="og:site_name" content="花辞树" />
     <meta property="og:locale" content={lang === 'zh' ? 'zh_CN' : 'en_US'} />
