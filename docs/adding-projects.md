@@ -47,13 +47,13 @@ src/content/projects/<slug>/
 3. 执行：
 
 ```powershell
-npm run project:add -- --input ".project-intake.json" --images "C:\path\to\posters"
+node scripts/add-project.mjs --input ".project-intake.json" --images "C:\path\to\posters"
 ```
 
 需要插入指定位置时：
 
 ```powershell
-npm run project:add -- --input ".project-intake.json" --images "C:\path\to\posters" --position 2
+node scripts/add-project.mjs --input ".project-intake.json" --images "C:\path\to\posters" --position 2
 ```
 
 脚本会自动：
@@ -67,18 +67,48 @@ npm run project:add -- --input ".project-intake.json" --images "C:\path\to\poste
 只验证、不写入：
 
 ```powershell
-npm run project:add -- --input ".project-intake.json" --images "C:\path\to\posters" --dry-run
+node scripts/add-project.mjs --input ".project-intake.json" --images "C:\path\to\posters" --dry-run
 ```
 
 检查全部现有项目：
 
 ```powershell
-npm run project:check
+node scripts/add-project.mjs --check
 ```
 
 添加完成后运行：
 
 ```powershell
-npm run build
-npm run test:e2e
+npm.cmd run build
+npm.cmd run test:e2e
+```
+
+日常添加项目只需要执行项目清单检查。完整构建和浏览器测试仅在准备发布，或修改了网站公共组件时执行。
+
+## Windows npm 命令冲突记录
+
+记录日期：`2026-07-19`
+
+当前机器执行裸命令 `npm` 时，PowerShell 会优先解析到：
+
+```text
+C:\Windows\System32\npm
+```
+
+该文件大小为 `0` 字节，并不是 Node.js 的 npm。由于 `C:\Windows\System32` 在环境变量 `PATH` 中排在 Node.js 目录之前，`npm run ...` 可能没有任何输出并一直等待到超时。
+
+正确的 Node.js npm 位于：
+
+```text
+D:\app\NodeJS\npm.cmd
+```
+
+项目导入和清单校验优先直接运行 `node scripts/add-project.mjs`。确实需要 npm 脚本时必须使用 `npm.cmd`，不要使用裸命令 `npm`。
+
+诊断命令：
+
+```powershell
+Get-Command npm -All
+Get-Item C:\Windows\System32\npm
+npm.cmd --version
 ```
