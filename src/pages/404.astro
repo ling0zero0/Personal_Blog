@@ -1,0 +1,27 @@
+---
+import { ArrowLeft } from 'lucide-astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="404 — Signal lost" description="The requested coordinate could not be found." lang="en" hideFooter>
+  <section class="not-found">
+    <div class="noise" aria-hidden="true"></div>
+    <div class="not-found-content container">
+      <div class="mono">ERROR / COORDINATE UNKNOWN</div>
+      <h1>4<span>0</span>4</h1>
+      <div class="not-found-bottom"><p>Signal lost.<br/><span>这个坐标不存在。</span></p><div class="home-links"><a class="rule-link" href="/en/"><ArrowLeft size={14}/> Return home</a><a class="rule-link" href="/zh/"><ArrowLeft size={14}/> 返回首页</a></div></div>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .not-found { position: relative; min-height: 100vh; overflow: hidden; background: #0c0c0b; color: #efefe9; }
+  .noise { position: absolute; inset: 0; opacity: .25; background-image: repeating-linear-gradient(0deg, transparent 0 3px, #fff 4px); mask-image: linear-gradient(90deg, transparent, #000, transparent); animation: drift 8s linear infinite; }
+  .not-found-content { position: relative; min-height: 100vh; padding-top: calc(var(--header-h) + 80px); padding-bottom: 50px; display: flex; flex-direction: column; justify-content: space-between; }
+  .not-found-content > .mono { color: #ffffff77; }
+  h1 { margin: 0; text-align: center; font-size: min(38vw, 560px); line-height: .7; letter-spacing: 0; }
+  h1 span { color: var(--accent); }
+  .not-found-bottom { display: flex; justify-content: space-between; align-items: end; gap: 40px; }
+  .not-found-bottom p { margin: 0; font-size: clamp(24px, 3vw, 42px); line-height: 1.35; } .not-found-bottom p span { color: #ffffff77; }
+  .home-links { display: flex; gap: 25px; } .home-links .rule-link { flex-direction: row-reverse; }
+  @keyframes drift { to { transform: translateY(40px); } }
+  @media (max-width: 650px) { .not-found-bottom { align-items: start; flex-direction: column; } .home-links { flex-direction: column; } }
+</style>

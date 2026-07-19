@@ -1,0 +1,30 @@
+---
+import { AudioLines, Command, Menu, X } from 'lucide-astro';
+import type { Locale } from '../data/site';
+import { ui, profile } from '../data/site';
+const { lang } = Astro.props as { lang: Locale };
+const t = ui[lang];
+const path = Astro.url.pathname;
+const currentSegment = path.split('/')[2] || '';
+const switchPath = `/${lang === 'zh' ? 'en' : 'zh'}/${path.split('/').slice(2).join('/')}`;
+---
+<header class="site-header">
+  <a class="brand" href={`/${lang}/`} aria-label={lang === 'zh' ? '沈野首页' : 'Shen Ye home'}>
+    <span class="brand-mark"></span><span>{lang === 'zh' ? '沈野' : 'SHEN YE'}</span>
+  </a>
+  <nav class="desktop-nav" aria-label={lang === 'zh' ? '主导航' : 'Primary navigation'}>
+    {t.nav.map((label, index) => <a href={`/${lang}/${t.navPaths[index]}`} aria-current={currentSegment === t.navPaths[index] ? 'page' : undefined}>{label}</a>)}
+  </nav>
+  <div class="header-actions">
+    <button class="icon-button sound-button" id="sound-toggle" aria-label={t.soundOff} title={t.soundOff}><AudioLines size={17} /></button>
+    <button class="icon-button command-open" aria-label={t.command} title={`${t.command} (Ctrl K)`}><Command size={17} /></button>
+    <a class="language-link" href={switchPath} hreflang={lang === 'zh' ? 'en' : 'zh'} aria-label={lang === 'zh' ? 'Switch to English' : '切换到中文'}>{t.locale}</a>
+    <button class="icon-button mobile-menu-button" aria-label={t.menu} aria-expanded="false"><Menu class="menu-icon" size={18} /><X class="close-icon" size={18} style="display:none" /></button>
+  </div>
+</header>
+<aside class="mobile-menu" data-open="false">
+  <nav aria-label={lang === 'zh' ? '移动导航' : 'Mobile navigation'}>
+    {t.nav.map((label, index) => <a href={`/${lang}/${t.navPaths[index]}`}>{label}</a>)}
+  </nav>
+  <div class="mobile-menu-meta mono"><span>{profile[lang].location}</span><span>© 2026</span></div>
+</aside>

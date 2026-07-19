@@ -1,0 +1,88 @@
+---
+import { ArrowUpRight } from 'lucide-astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageIntro from '../../../components/PageIntro.astro';
+import SignalBand from '../../../components/SignalBand.astro';
+import { locales, type Locale } from '../../../data/site';
+export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
+const lang = Astro.params.lang as Locale;
+const posts = (await getCollection('blog', ({ data }) => data.lang === lang && !data.draft)).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
+const copy = lang === 'zh' ? { title: '观察与笔记', eyebrow: '文章索引', description: '关于智能界面、实时媒介，以及技术如何改变我们的感知方式。', all: '全部', min: '分钟', empty: '没有匹配的文章。' } : { title: 'Observations & notes', eyebrow: 'Journal index', description: 'On intelligent interfaces, real-time media, and how technology changes the way we perceive.', all: 'All', min: 'min read', empty: 'No writing matches this filter.' };
+const format = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+const readingTime = (body: string) => Math.max(2, Math.ceil(body.trim().split(/\s+|(?=[\u4e00-\u9fff])/).length / (lang === 'zh' ? 350 : 220)));
+---
+<BaseLayout title={`${copy.title} — ${lang === 'zh' ? '沈野' : 'Shen Ye'}`} description={copy.description} lang={lang}>
+  <PageIntro index="02" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+  <SignalBand index="02" label="JOURNAL / FEED" items={tags} />
+  <section class="journal-index section">
+    <div class="container">
+      <div class="tag-filters" role="group" aria-label={lang === 'zh' ? '按标签筛选' : 'Filter by tag'}>
+        <button class="tag-filter active" data-tag="all">{copy.all}</button>
+        {tags.map((tag) => <button class="tag-filter" data-tag={tag}>{tag}</button>)}
+      </div>
+      <div class="post-list">
+        {posts.map((post, i) => <article class="post-row" data-tags={post.data.tags.join('|')} data-reveal>
+          <a href={`/${lang}/journal/${post.id.split('/').pop()}`}>
+            <div class="post-index mono"><span>ENTRY</span>{String(i + 1).padStart(2, '0')}</div>
+            <div class="post-copy"><h2>{post.data.title}</h2><p>{post.data.description}</p><div class="post-tags mono">{post.data.tags.map((tag) => <span>{tag}</span>)}</div></div>
+            <div class="post-meta mono"><span>{format.format(post.data.pubDate)}</span><span>{readingTime(post.body || '')} {copy.min}</span><ArrowUpRight size={22} /></div>
+          </a>
+        </article>)}
+      </div>
+      <p class="empty-state" hidden>{copy.empty}</p>
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .journal-index { padding: clamp(55px, 8vw, 120px) 0 clamp(90px, 12vw, 180px); overflow: hidden; }
+  .tag-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: clamp(45px, 7vw, 100px); }
+  .tag-filter { padding: 10px 16px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; font-size: 12px; transition: background .2s, color .2s, transform .2s; }
+  .tag-filter:hover, .tag-filter.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .tag-filter:hover { transform: translateY(-2px); }
+  .post-list { display: grid; gap: clamp(10px, 1.4vw, 22px); }
+  .post-row { position: relative; isolation: isolate; color: #11110f; transition: transform .5s var(--ease); }
+  .post-row:nth-child(even) { color: #f5f2ea; }
+  .post-row::after { content: attr(data-tags); position: absolute; z-index: 0; right: 4%; bottom: -0.16em; color: #ffffff20; font: 600 clamp(60px, 11vw, 170px)/.75 'DM Mono', monospace; text-transform: uppercase; white-space: nowrap; pointer-events: none; transition: transform .6s var(--ease); }
+  .post-row:nth-child(even)::after { color: color-mix(in srgb, var(--section-color) 20%, transparent); }
+  .post-row::before { content: ''; position: absolute; z-index: -1; inset: 0; background: var(--section-color); clip-path: polygon(0 0, 97% 0, 100% 82%, 2% 100%); transition: clip-path .5s var(--ease), filter .5s var(--ease); }
+  .post-row:nth-child(even)::before { background: #11110f; clip-path: polygon(3% 0, 100% 8%, 97% 100%, 0 88%); }
+  .post-row:hover::before, .post-row:focus-within::before { clip-path: polygon(0 4%, 100% 0, 98% 100%, 1% 94%); filter: drop-shadow(10px 10px 0 var(--section-color)); }
+  .post-row:hover, .post-row:focus-within { transform: translateX(10px); }
+  .post-row:hover::after, .post-row:focus-within::after { transform: translateX(-30px); }
+  .post-row[hidden] { display: none; }
+  .post-row a { position: relative; z-index: 1; display: grid; grid-template-columns: clamp(100px, 13vw, 200px) 1fr auto; gap: clamp(22px, 4vw, 66px); min-height: clamp(270px, 29vw, 440px); padding: clamp(42px, 5vw, 78px); outline: 0; }
+  .post-row a:focus-visible { box-shadow: inset 0 0 0 5px #f5f2ea, inset 0 0 0 9px #11110f; }
+  .post-row:nth-child(even) a:focus-visible { box-shadow: inset 0 0 0 5px var(--section-color), inset 0 0 0 9px #f5f2ea; }
+  .post-index { align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; padding-right: 22px; border-right: 1px solid currentColor; font-size: var(--type-index); font-weight: 500; line-height: .9; letter-spacing: -.06em; }
+  .post-index span { font-size: 11px; letter-spacing: 0; }
+  .post-copy { align-self: center; }
+  .post-copy h2 { margin: 0; max-width: 900px; font-size: var(--type-journal-title); line-height: var(--title-line-height); font-weight: 600; letter-spacing: var(--title-letter-spacing); overflow-wrap: break-word; }
+  .post-copy p { max-width: 660px; margin: 22px 0; line-height: 1.55; opacity: .7; }
+  .post-tags { display: flex; flex-wrap: wrap; gap: 8px 18px; opacity: .72; }
+  .post-meta { display: grid; min-width: 150px; align-content: space-between; justify-items: end; gap: 12px; }
+  .post-meta svg { width: 42px; height: 42px; transition: transform .35s var(--ease); }
+  .post-row:hover .post-meta svg, .post-row:focus-within .post-meta svg { transform: translate(8px, -8px) rotate(6deg); }
+  .empty-state { padding: 60px 0; color: var(--muted); }
+  @media (max-width: 760px) {
+    .post-list { gap: 12px; }
+    .post-row::before, .post-row:nth-child(even)::before { clip-path: polygon(0 0, 100% 3%, 96% 100%, 0 96%); }
+    .post-row:hover, .post-row:focus-within { transform: translateX(4px); }
+    .post-row a { grid-template-columns: 68px 1fr; gap: 16px; min-height: 330px; padding: 34px 24px 42px; }
+    .post-index { grid-row: 1 / 3; padding-right: 12px; font-size: var(--type-index); writing-mode: vertical-rl; transform: rotate(180deg); }
+    .post-index span { display: none; }
+    .post-copy h2 { font-size: var(--type-journal-title); }
+    .post-copy p { margin-block: 16px; font-size: 15px; line-height: 1.65; }
+    .post-meta { grid-column: 2; grid-template-columns: 1fr auto auto; min-width: 0; justify-items: start; align-items: end; font-size: 11px; line-height: 1.35; }
+    .post-meta svg { justify-self: end; width: 28px; height: 28px; }
+    .post-row::after { right: -10%; font-size: 90px; }
+  }
+</style>
+<script>
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('.tag-filter')];
+  const rows = [...document.querySelectorAll<HTMLElement>('.post-row')]; const empty = document.querySelector<HTMLElement>('.empty-state');
+  function filter(tag: string) { let count = 0; buttons.forEach((b) => b.classList.toggle('active', b.dataset.tag?.toLowerCase() === tag.toLowerCase())); rows.forEach((row) => { const show = tag === 'all' || (row.dataset.tags || '').toLowerCase().split('|').includes(tag.toLowerCase()); row.hidden = !show; if (show) count++; }); if (empty) empty.hidden = count > 0; }
+  buttons.forEach((button) => button.addEventListener('click', () => { const tag = button.dataset.tag || 'all'; filter(tag); history.replaceState(null, '', tag === 'all' ? location.pathname : `?tag=${encodeURIComponent(tag)}`); }));
+  const initial = new URLSearchParams(location.search).get('tag'); if (initial) filter(initial);
+</script>

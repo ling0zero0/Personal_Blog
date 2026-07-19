@@ -1,0 +1,14 @@
+---
+import type { Locale } from '../data/site';
+import { ui, profile } from '../data/site';
+const { lang } = Astro.props as { lang: Locale };
+---
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <p class="footer-sign">{ui[lang].footer}</p>
+      <div class="footer-meta mono"><span>© 2026 {profile[lang].name}</span><span>{profile[lang].location}</span><span class="availability">{ui[lang].status}</span></div>
+    </div>
+    <a class="rule-link" href={`mailto:${profile[lang].email}`}>{profile[lang].email}</a>
+  </div>
+</footer>

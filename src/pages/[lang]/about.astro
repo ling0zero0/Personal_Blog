@@ -1,0 +1,47 @@
+---
+import { ArrowUpRight } from 'lucide-astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageIntro from '../../components/PageIntro.astro';
+import SignalBand from '../../components/SignalBand.astro';
+import { locales, profile, experience, type Locale } from '../../data/site';
+export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
+const lang = Astro.params.lang as Locale;
+const p = profile[lang];
+const copy = lang === 'zh' ? { title: '关于我', eyebrow: '人物与方法', description: '我在技术可以被感知的地方工作，把抽象系统转化成清楚、克制而有生命力的体验。', now: '此刻关注', nowText: '低干扰的智能产品、生成式界面的可解释性，以及实时图形如何成为叙事材料。', skills: '能力范围', path: '工作路径', connect: '建立联系', mail: '写一封邮件' } : { title: 'About me', eyebrow: 'Person & practice', description: 'I work where technology can be felt, translating abstract systems into experiences that are clear, restrained, and alive.', now: 'Current focus', nowText: 'Low-interruption intelligence, explainability in generative interfaces, and real-time graphics as narrative material.', skills: 'Capabilities', path: 'Path so far', connect: 'Start a conversation', mail: 'Send an email' };
+---
+<BaseLayout title={`${copy.title} — ${p.name}`} description={copy.description} lang={lang}>
+  <PageIntro index="03" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
+  <SignalBand index="03" label="PROFILE / OPEN" items={p.skills} />
+  <section class="about-statement section"><div class="container statement-grid" data-reveal><span class="eyebrow">{copy.now}</span><p>{copy.nowText}</p></div></section>
+  <section class="capabilities section"><div class="container"><span class="eyebrow" data-reveal>{copy.skills}</span><div class="skills-list">{p.skills.map((skill, i) => <div data-reveal><span class="mono">0{i + 1}</span><strong>{skill}</strong></div>)}</div></div></section>
+  <section class="experience section"><div class="container"><span class="eyebrow" data-reveal>{copy.path}</span><div class="timeline">{experience[lang].map((item) => <article data-reveal><time class="mono">{item.period}</time><div><h2>{item.title}</h2><p>{item.note}</p></div></article>)}</div></div></section>
+  <section class="contact-band"><div class="container"><span class="eyebrow">{copy.connect}</span><a href={`mailto:${p.email}`}><span>{copy.mail}</span><ArrowUpRight /></a><div class="contact-meta mono"><span>{p.email}</span><span>{p.location}</span></div></div></section>
+</BaseLayout>
+<style>
+  .statement-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 50px; }
+  .about-statement { overflow: hidden; }
+  .about-statement::after { content: 'NOW'; position: absolute; z-index: -1; right: -2vw; bottom: -5vw; color: color-mix(in srgb, var(--section-color) 13%, transparent); font: 600 clamp(120px, 28vw, 430px)/.7 'DM Mono', monospace; transform: translateX(calc(var(--pointer-x) * -16px)); }
+  .statement-grid p { margin: 0; max-width: 950px; font-size: var(--type-heading-xl); line-height: var(--title-line-height); letter-spacing: var(--title-letter-spacing); text-wrap: balance; }
+  .skills-list { margin-top: 70px; border-top: 1px solid var(--line); }
+  .skills-list div { display: grid; grid-template-columns: 100px 1fr; align-items: center; padding-block: 22px; border-bottom: 1px solid var(--line); }
+  .skills-list div { position: relative; isolation: isolate; transition: transform .35s var(--ease), color .35s; }
+  .skills-list div::after { content: ''; position: absolute; inset: 0 auto 0 -104%; width: 100%; z-index: -1; background: var(--section-color); transform: skewX(-8deg); transition: left .45s var(--ease); }
+  .skills-list div:hover { color: #11110f; transform: translateX(10px); }
+  .skills-list div:hover::after { left: 0; }
+  .skills-list span { color: var(--muted); }
+  .skills-list strong { font-size: clamp(26px, 3vw, 48px); line-height: var(--title-line-height); font-weight: 500; }
+  .timeline { margin: 70px 0 0 18%; border-left: 1px solid var(--line); }
+  .timeline article { position: relative; display: grid; grid-template-columns: 180px 1fr; gap: 30px; padding: 0 0 75px 42px; }
+  .timeline article::before { content: ''; position: absolute; left: -5px; top: 3px; width: 9px; height: 9px; background: var(--section-color); border: 1px solid var(--ink); transform: rotate(45deg); box-shadow: 0 0 0 6px var(--bg); }
+  .timeline time { color: var(--muted); }
+  .timeline h2 { margin: 0 0 14px; font-size: clamp(25px, 3vw, 42px); font-weight: 500; }
+  .timeline p { max-width: 620px; margin: 0; color: var(--muted); line-height: 1.65; }
+  .contact-band { position: relative; overflow: hidden; padding-block: clamp(90px, 13vw, 180px); background: var(--section-color); color: #11110f; }
+  .contact-band::before { content: 'OPEN / SIGNAL'; position: absolute; inset: auto -3vw -2vw auto; color: #11110f18; font: 600 clamp(70px, 14vw, 210px)/.8 'DM Mono', monospace; white-space: nowrap; animation: contact-drift 12s ease-in-out infinite alternate; }
+  .contact-band .eyebrow { color: #ffffffb5; }
+  .contact-band a { display: flex; justify-content: space-between; align-items: center; gap: 30px; margin-block: 50px; padding-bottom: 20px; border-bottom: 2px solid #fff; font-size: clamp(38px, 5.5vw, 80px); line-height: var(--title-line-height); letter-spacing: var(--title-letter-spacing); font-weight: 600; overflow-wrap: break-word; }
+  .contact-band a svg { flex: 0 0 auto; width: clamp(35px, 6vw, 80px); height: auto; }
+  .contact-meta { display: flex; justify-content: space-between; }
+  @keyframes contact-drift { to { transform: translateX(-36px); } }
+  @media (max-width: 720px) { .statement-grid { grid-template-columns: 1fr; } .statement-grid p { font-size: clamp(28px, 9vw, 40px); } .timeline { margin-left: 4px; } .timeline article { grid-template-columns: 1fr; gap: 15px; padding-left: 28px; } .contact-band a { gap: 16px; font-size: clamp(34px, 11vw, 48px); } .contact-meta { flex-direction: column; gap: 10px; overflow-wrap: anywhere; } }
+</style>

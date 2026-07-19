@@ -1,0 +1,83 @@
+import * as THREE from 'three';
+
+export class DataSculpture {
+  private host: HTMLElement;
+  private renderer!: THREE.WebGLRenderer;
+  private scene = new THREE.Scene();
+  private camera = new THREE.PerspectiveCamera(42, 1, .1, 100);
+  private group = new THREE.Group();
+  private particles!: THREE.Points;
+  private lines!: THREE.LineSegments;
+  private pointer = new THREE.Vector2();
+  private targetPointer = new THREE.Vector2();
+  private scroll = 0;
+  private speed = 1;
+  private scatter = 0;
+  private reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private mobile = innerWidth < 720;
+  private visible = true;
+
+  constructor(host: HTMLElement) { this.host = host; }
+
+  init() {
+    try {
+      this.renderer = new THREE.WebGLRenderer({ antialias: !this.mobile, alpha: true, powerPreference: this.mobile ? 'low-power' : 'high-performance' });
+    } catch { this.fallback(); return; }
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.mobile ? 1.35 : 1.8));
+    this.renderer.setClearColor(0x000000, 0); this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.domElement.setAttribute('aria-hidden', 'true'); this.host.appendChild(this.renderer.domElement);
+    this.camera.position.set(0, 0, 8.5); this.scene.add(this.group);
+    this.createGeometry(); this.resize();
+    addEventListener('resize', this.resize); addEventListener('pointermove', this.onPointer, { passive: true });
+    addEventListener('scroll', this.onScroll, { passive: true }); document.addEventListener('visibilitychange', this.onVisibility);
+    addEventListener('scene-command', this.onCommand as EventListener);
+    if (this.mobile) this.host.addEventListener('touchmove', this.onTouch, { passive: true });
+    this.host.dataset.rendered = 'true'; this.animate();
+  }
+
+  private createGeometry() {
+    const count = this.mobile ? 900 : 2600;
+    const positions = new Float32Array(count * 3); const colors = new Float32Array(count * 3);
+    const palette = [new THREE.Color('#f1efe6'), new THREE.Color('#ff4d24'), new THREE.Color('#20aa89'), new THREE.Color('#e8b62c')];
+    for (let i = 0; i < count; i++) {
+      const t = Math.random() * Math.PI * 2; const band = (Math.random() - .5) * 4.8;
+      const radius = 1.65 + Math.sin(t * 3 + band) * .45 + Math.random() * .38;
+      positions[i * 3] = Math.cos(t) * radius + Math.sin(band * 2) * .35;
+      positions[i * 3 + 1] = band * .72;
+      positions[i * 3 + 2] = Math.sin(t) * radius + Math.cos(band * 1.4) * .45;
+      const color = palette[Math.random() > .88 ? 1 + Math.floor(Math.random() * 3) : 0]; colors.set(color.toArray(), i * 3);
+    }
+    const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3)); geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    this.particles = new THREE.Points(geometry, new THREE.PointsMaterial({ size: this.mobile ? .025 : .018, vertexColors: true, transparent: true, opacity: .92, blending: THREE.AdditiveBlending, depthWrite: false }));
+    this.group.add(this.particles);
+
+    const linePositions: number[] = [];
+    for (let ring = -5; ring <= 5; ring++) for (let i = 0; i < 48; i++) {
+      const y = ring * .38; const a = (i / 48) * Math.PI * 2; const b = ((i + 1) / 48) * Math.PI * 2; const r = 1.8 + Math.sin(a * 3 + y) * .22;
+      linePositions.push(Math.cos(a) * r, y, Math.sin(a) * r, Math.cos(b) * r, y, Math.sin(b) * r);
+    }
+    const lineGeo = new THREE.BufferGeometry(); lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+    this.lines = new THREE.LineSegments(lineGeo, new THREE.LineBasicMaterial({ color: 0x8e918c, transparent: true, opacity: .16, blending: THREE.AdditiveBlending })); this.group.add(this.lines);
+  }
+
+  private resize = () => { const { clientWidth: w, clientHeight: h } = this.host; this.camera.aspect = w / Math.max(h, 1); this.camera.updateProjectionMatrix(); this.renderer?.setSize(w, h, false); };
+  private onPointer = (e: PointerEvent) => { this.targetPointer.set((e.clientX / innerWidth - .5) * 2, (e.clientY / innerHeight - .5) * 2); };
+  private onTouch = (e: TouchEvent) => { const t = e.touches[0]; if (t) this.targetPointer.set((t.clientX / innerWidth - .5) * 1.4, (t.clientY / innerHeight - .5) * 1.4); };
+  private onScroll = () => { this.scroll = Math.min(scrollY / innerHeight, 1.8); };
+  private onVisibility = () => { this.visible = !document.hidden; if (this.visible) this.animate(); };
+  private onCommand = (e: CustomEvent<string>) => { if (e.detail === 'calm') this.speed = .2; if (e.detail === 'focus') { this.scatter = -.45; this.speed = .55; } if (e.detail === 'scatter') { this.scatter = 1.2; setTimeout(() => this.scatter = 0, 2200); } };
+  private fallback() { this.host.classList.add('scene-fallback'); this.host.dataset.rendered = 'fallback'; }
+
+  private animate = () => {
+    if (!this.visible) return; requestAnimationFrame(this.animate);
+    const t = performance.now() * .00018 * (this.reduced ? .08 : this.speed);
+    this.pointer.lerp(this.targetPointer, .035);
+    this.group.rotation.y = t + this.pointer.x * .18 + this.scroll * .48;
+    this.group.rotation.x = -.15 + this.pointer.y * .12 + this.scroll * .14;
+    const targetScale = 1 + this.scatter; this.group.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), .025);
+    this.camera.position.x += (this.pointer.x * .45 - this.camera.position.x) * .025;
+    this.camera.position.y += (-this.pointer.y * .28 - this.scroll * .45 - this.camera.position.y) * .025;
+    this.camera.lookAt(0, -this.scroll * .22, 0); this.lines.rotation.y = -t * .7;
+    this.renderer.render(this.scene, this.camera);
+  };
+}

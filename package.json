@@ -1,0 +1,27 @@
+{
+  "name": "shenye-digital-space",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.5.0",
+    "astro": "^7.1.1",
+    "gsap": "^3.13.0",
+    "lucide-astro": "^0.556.0",
+    "three": "^0.178.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@playwright/test": "^1.54.0",
+    "@types/three": "^0.178.0",
+    "typescript": "^5.8.0"
+  }
+}

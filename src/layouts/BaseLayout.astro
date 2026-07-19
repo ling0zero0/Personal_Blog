@@ -1,0 +1,57 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import CommandPalette from '../components/CommandPalette.astro';
+import type { Locale } from '../data/site';
+import { ui } from '../data/site';
+const { title, description, lang, image, hideFooter = false } = Astro.props as { title: string; description: string; lang: Locale; image?: string; hideFooter?: boolean };
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const alternate = Astro.url.pathname.replace(`/${lang}/`, `/${lang === 'zh' ? 'en' : 'zh'}/`);
+const route = Astro.url.pathname.split('/').filter(Boolean)[1] || 'home';
+const section = ['projects', 'journal', 'about'].includes(route) ? route : 'home';
+---
+<!doctype html>
+<html lang={lang === 'zh' ? 'zh-CN' : 'en'}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0c0c0b" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={lang === 'zh' ? 'en' : 'zh-CN'} href={new URL(alternate, Astro.site)} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image || new URL('/og.svg', Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>{title}</title>
+  </head>
+  <body data-lang={lang} data-section={section}>
+    <a href="#main" class="skip-link">{ui[lang].skip}</a>
+    <div class="persona-stage" aria-hidden="true">
+      <div class="stage-frame" data-depth="back"><i></i><i></i></div>
+      <div class="stage-halftone" data-depth="back"></div>
+      <div class="stage-shard stage-shard-a" data-depth="mid"></div>
+      <div class="stage-shard stage-shard-b" data-depth="front"></div>
+      <div class="stage-cross stage-cross-a" data-depth="mid"></div>
+      <div class="stage-cross stage-cross-b" data-depth="front"></div>
+      <div class="stage-rail"><span>SHY / 2.5D</span><span>31.2304 N</span><span>{section.toUpperCase()} / ACTIVE</span></div>
+    </div>
+    <Header lang={lang} />
+    <main id="main"><slot /></main>
+    {!hideFooter && <Footer lang={lang} />}
+    <CommandPalette lang={lang} />
+    <div class="transition-curtain" aria-hidden="true">
+      <i class="curtain-slice curtain-dark"></i><i class="curtain-slice curtain-accent"></i>
+      <span>{lang === 'zh' ? '进入下一空间' : 'Entering next space'}</span>
+    </div>
+    <script>
+      import { initShell } from '../scripts/shell';
+      initShell();
+    </script>
+  </body>
+</html>

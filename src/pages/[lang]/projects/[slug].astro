@@ -1,0 +1,109 @@
+---
+import { ArrowLeft, ArrowUpRight } from 'lucide-astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ProjectVisual from '../../../components/ProjectVisual.astro';
+import ArrowLink from '../../../components/ArrowLink.astro';
+import { locales, type Locale } from '../../../data/site';
+import { projects } from '../../../data/projects';
+export function getStaticPaths() { return locales.flatMap((lang) => projects.map((project) => ({ params: { lang, slug: project.slug }, props: { project } }))); }
+const lang = Astro.params.lang as Locale;
+const { project } = Astro.props;
+const projectIndex = projects.findIndex((item) => item.slug === project.slug);
+const next = projects[(projectIndex + 1) % projects.length];
+const copy = lang === 'zh' ? { back: '全部项目', context: '项目背景', role: '我的角色', outcome: '结果', visit: '访问项目', next: '下一个项目', prompt: '继续探索' } : { back: 'All projects', context: 'Context', role: 'My role', outcome: 'Outcome', visit: 'Visit project', next: 'Next project', prompt: 'Keep exploring' };
+---
+<BaseLayout title={`${project.title[lang]} — ${lang === 'zh' ? '沈野' : 'Shen Ye'}`} description={project.description[lang]} lang={lang}>
+  <header class="project-hero" data-file={`FILE / ${project.index}`}>
+    <div class="project-stage container">
+      <div class="stage-topline">
+        <a class="back-link mono" href={`/${lang}/projects`}><ArrowLeft size={14} />{copy.back}</a>
+        <span class="stage-status mono">ARCHIVE / {project.year}</span>
+      </div>
+      <div class="project-heading">
+        <div class="project-kicker mono"><span>{project.index}</span><span>{project.year}</span><span>{project.tags.join(' / ')}</span></div>
+        <h1>{project.title[lang]}</h1>
+      </div>
+      <div class="project-visual-frame">
+        <ProjectVisual slug={project.slug} index={project.index} label={`${project.title[lang]} visual`} />
+      </div>
+      <p class="project-summary">{project.summary[lang]}</p>
+      <span class="stage-axis mono" aria-hidden="true">CASE STUDY / {project.index}</span>
+    </div>
+  </header>
+  <section class="project-story section">
+    <div class="container story-grid" data-reveal>
+      <span class="eyebrow">{copy.context}</span>
+      <div class="story-main">
+        <p class="story-lead">{project.description[lang]}</p>
+        <div class="facts">
+          <div><span class="mono muted">{copy.role}</span><p>{project.role[lang]}</p></div>
+          <div><span class="mono muted">{copy.outcome}</span><p>{project.outcome[lang]}</p></div>
+        </div>
+        <ArrowLink href={project.href} label={copy.visit} external />
+      </div>
+    </div>
+  </section>
+  <a class="next-project" href={`/${lang}/projects/${next.slug}`} data-reveal>
+    <div class="container next-inner">
+      <div><span class="eyebrow">{copy.prompt} / {copy.next}</span><h2>{next.title[lang]}</h2></div>
+      <ArrowUpRight size={48} />
+    </div>
+  </a>
+</BaseLayout>
+<style>
+  .project-hero { position: relative; min-height: max(720px, 100svh); overflow: hidden; color: #f4f3ec; background: linear-gradient(108deg, var(--section-color) 0 39%, #0b0c0b 39.1% 100%); isolation: isolate; border-bottom: 14px solid var(--section-color); }
+  .project-hero::before { content: attr(data-file); position: absolute; right: -3vw; bottom: -2vw; color: #ffffff0a; font: 600 clamp(100px, 22vw, 350px)/.75 'DM Mono', monospace; white-space: nowrap; transform: translate(calc(var(--pointer-x) * -14px), calc(var(--pointer-y) * -14px)); }
+  .project-hero::after { content: ''; position: absolute; inset: auto 0 0; height: 44px; opacity: .24; background: repeating-linear-gradient(135deg, transparent 0 13px, #fff 13px 15px); }
+  .project-stage { position: relative; min-height: max(720px, 100svh); padding-top: calc(var(--header-h) + 38px); padding-bottom: 74px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: auto 1fr auto; column-gap: 20px; perspective: 1400px; }
+  .stage-topline { position: relative; z-index: 5; grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; padding-bottom: 18px; border-bottom: 1px solid #ffffff66; }
+  .back-link { display: flex; gap: 8px; align-items: center; width: max-content; color: inherit; }
+  .stage-status { color: #ffffffaa; }
+  .project-heading { position: relative; z-index: 4; grid-column: 1 / 10; grid-row: 2; align-self: center; pointer-events: none; }
+  .project-kicker { display: flex; gap: 28px; margin-bottom: clamp(28px, 5vh, 60px); color: #fff; }
+  .project-heading h1 { width: 100%; margin: 0; font-size: clamp(72px, 8vw, 116px); font-weight: 650; overflow-wrap: break-word; word-break: normal; text-wrap: balance; text-shadow: 10px 12px 0 #0b0c0b, 20px 22px 0 color-mix(in srgb, var(--section-color) 55%, #0b0c0b); }
+  :global(html[lang='zh']) .project-heading h1 { line-height: 1; letter-spacing: -.045em; }
+  :global(html[lang='en']) .project-heading h1 { line-height: .9; letter-spacing: -.055em; }
+  .project-visual-frame { position: relative; z-index: 2; grid-column: 6 / -1; grid-row: 2; align-self: center; margin: 24px 1vw 10px 0; transform: rotateY(-8deg) rotateZ(2.5deg) translateZ(-20px); transform-origin: right center; box-shadow: -28px 34px 0 color-mix(in srgb, var(--section-color) 78%, #050505), -48px 55px 70px #000a; }
+  .project-visual-frame::before { content: ''; position: absolute; z-index: 3; inset: -13px; border: 1px solid #ffffff99; pointer-events: none; }
+  .project-visual-frame :global(.project-visual) { height: clamp(390px, 48vw, 680px); min-height: 0; }
+  .project-summary { position: relative; z-index: 5; grid-column: 8 / -1; grid-row: 3; margin: -34px 0 0; padding: 22px 24px; border-left: 7px solid var(--section-color); background: #f4f3ec; color: #111; font-size: clamp(18px, 2vw, 28px); line-height: 1.25; box-shadow: 12px 12px 0 #000; }
+  .stage-axis { position: absolute; left: calc(var(--pad) / 2); bottom: 84px; color: #000b; writing-mode: vertical-rl; transform: rotate(180deg); }
+  .story-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 60px; }
+  .story-lead { margin: 0 0 80px; font-size: clamp(27px, 3vw, 40px); line-height: 1.28; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 70px; border-top: 1px solid var(--line); }
+  .facts > div { padding-top: 18px; }
+  .facts p { max-width: 400px; line-height: 1.55; }
+  .next-project { display: block; padding-block: 90px; background: var(--ink); color: var(--bg); }
+  .next-inner { display: flex; justify-content: space-between; align-items: end; gap: 30px; }
+  .next-inner .eyebrow { color: color-mix(in srgb, var(--bg) 60%, transparent); }
+  .next-inner h2 { margin: 28px 0 0; font-size: clamp(52px, 6vw, 72px); line-height: .94; font-weight: 500; overflow-wrap: break-word; word-break: normal; }
+  @media (max-width: 720px) {
+    .project-hero { min-height: 0; background: linear-gradient(168deg, var(--section-color) 0 38%, #0b0c0b 38.2% 100%); }
+    .project-stage { min-height: 100svh; padding-top: calc(var(--header-h) + 26px); padding-bottom: 62px; display: flex; flex-direction: column; }
+    .stage-status { display: none; }
+    .project-heading { width: 100%; margin: clamp(48px, 8vh, 76px) 0 12px; }
+    .project-kicker { flex-wrap: wrap; gap: 10px 18px; margin-bottom: 26px; font-size: 11px; }
+    .project-heading h1 { font-size: clamp(46px, 14.5vw, 64px); text-shadow: 6px 7px 0 #0b0c0b, 11px 13px 0 color-mix(in srgb, var(--section-color) 58%, #0b0c0b); }
+    :global(html[lang='zh']) .project-heading h1 { line-height: 1.02; letter-spacing: -.04em; }
+    :global(html[lang='en']) .project-heading h1 { line-height: .92; letter-spacing: -.045em; }
+    .project-visual-frame { width: 92%; margin: 0 0 0 auto; transform: rotateZ(2deg); box-shadow: -13px 17px 0 color-mix(in srgb, var(--section-color) 78%, #050505); }
+    .project-visual-frame::before { inset: -7px; }
+    .project-visual-frame :global(.project-visual) { height: min(76vw, 430px); min-height: 300px; }
+    .project-summary { width: 88%; margin: 8px auto 0 0; padding: 18px; font-size: 18px; box-shadow: 8px 8px 0 #000; }
+    .stage-axis { display: none; }
+    .story-grid { grid-template-columns: 1fr; }
+    .facts { grid-template-columns: 1fr; }
+    .next-project { padding-block: 65px; }
+  }
+</style>
+<script>
+  import gsap from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  gsap.registerPlugin(ScrollTrigger);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const heading = gsap.from('.project-heading h1', { yPercent: 40, opacity: 0, duration: 1, ease: 'power4.out' });
+    const visual = gsap.from('.project-visual-frame', { clipPath: 'inset(0 0 100% 0)', duration: 1.1, ease: 'power3.inOut', delay: .2 });
+    ScrollTrigger.create({ trigger: '.project-hero', start: 'top 70%', onEnterBack: () => heading.restart() });
+    ScrollTrigger.create({ trigger: '.project-hero', start: 'top 88%', onEnter: () => visual.restart(), onEnterBack: () => visual.restart() });
+  }
+</script>

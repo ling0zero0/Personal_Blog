@@ -1,0 +1,68 @@
+---
+import { ArrowUpRight } from 'lucide-astro';
+import ProjectVisual from './ProjectVisual.astro';
+import type { Project } from '../data/projects';
+import type { Locale } from '../data/site';
+const { project, lang, position = 0 } = Astro.props as { project: Project; lang: Locale; position?: number };
+const href = `/${lang}/projects/${project.slug}`;
+---
+<article class:list={['project-row', { reverse: position % 2 === 1 }]} data-project={project.slug} data-tags={project.tags.join(' ')} data-reveal>
+  <div class="archive-rail mono" aria-hidden="true"><span>CASE</span><b>{project.index}</b><span>{project.year}</span></div>
+  <a class="project-media" href={href} aria-label={`${project.title[lang]} — ${project.summary[lang]}`}>
+    <span class="project-stamp mono" aria-hidden="true">FILE / {project.index} / LIVE</span>
+    <ProjectVisual slug={project.slug} index={project.index} label={`${project.title[lang]} visual`} />
+  </a>
+  <div class="project-copy">
+    <div class="project-meta mono"><span>{project.year}</span><span>{project.tags.join(' / ')}</span></div>
+    <h2><a href={href}>{project.title[lang]}</a></h2>
+    <p>{project.summary[lang]}</p>
+    <a class="project-open" href={href} aria-label={`${lang === 'zh' ? '查看' : 'View'} ${project.title[lang]}`}><span class="mono">OPEN CASE</span><ArrowUpRight /></a>
+  </div>
+  <span class="archive-word mono" aria-hidden="true">DYNAMIC / ARCHIVE / {project.index}</span>
+</article>
+<style>
+  .project-row { position: relative; display: grid; grid-template-columns: 56px repeat(11, minmax(0, 1fr)); min-height: min(850px, 78vw); margin-block: clamp(70px, 11vw, 170px); isolation: isolate; }
+  .project-row::before { content: ''; position: absolute; z-index: -2; inset: 6% 0 3% 8%; background: color-mix(in srgb, var(--section-color) 17%, var(--surface)); clip-path: polygon(0 5%, 95% 0, 100% 88%, 8% 100%); }
+  .project-row.reverse::before { inset: 3% 8% 6% 0; clip-path: polygon(5% 0, 100% 7%, 92% 100%, 0 88%); }
+  .archive-rail { grid-column: 1; grid-row: 1; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 18px 0; background: var(--section-color); color: #11110f; writing-mode: vertical-rl; }
+  .archive-rail b { font-size: 30px; }
+  .project-media { grid-column: 2 / 10; grid-row: 1; align-self: center; position: relative; display: block; min-width: 0; transform: rotate(-1.2deg); filter: drop-shadow(18px 22px 0 #11110f); transition: transform .7s var(--ease), filter .7s var(--ease); }
+  .reverse .project-media { grid-column: 5 / 13; transform: rotate(1.2deg); }
+  .project-media::after { content: ''; position: absolute; inset: 18px -18px -18px 18px; z-index: -1; border: 1px solid var(--section-color); }
+  .project-stamp { position: absolute; z-index: 7; top: -14px; left: clamp(18px, 4vw, 60px); padding: 9px 13px; background: var(--section-color); color: #11110f; transform: rotate(2deg); }
+  .project-media :global(.project-visual) { min-height: 520px; height: min(61vw, 760px); clip-path: polygon(0 0, 100% 4%, 96% 100%, 3% 95%); transition: clip-path .8s var(--ease), transform .8s var(--ease); }
+  .project-copy { grid-column: 8 / 13; grid-row: 1; z-index: 6; align-self: end; margin-bottom: 4%; padding: clamp(24px, 4vw, 58px); background: var(--paper); color: #11110f; box-shadow: -10px 10px 0 var(--section-color); transform: translateY(5%) rotate(.7deg); }
+  .reverse .project-copy { grid-column: 2 / 7; align-self: start; margin-top: 7%; margin-bottom: 0; transform: rotate(-.7deg); }
+  .project-meta { display: flex; justify-content: space-between; gap: 18px; padding-bottom: 14px; border-bottom: 1px solid #11110f; color: #55554f; }
+  .project-copy h2 { margin: clamp(28px, 4vw, 52px) 0 20px; font-size: var(--type-project-title); line-height: var(--title-line-height); font-weight: 600; letter-spacing: var(--title-letter-spacing); overflow-wrap: break-word; }
+  .project-copy h2 a { transition: color .2s; }
+  .project-copy h2 a:hover { color: color-mix(in srgb, var(--section-color) 82%, #11110f); }
+  .project-copy p { max-width: 480px; margin: 0; color: #55554f; font-size: 17px; line-height: 1.55; }
+  .project-open { display: flex; justify-content: space-between; align-items: center; gap: 18px; margin-top: 34px; padding: 14px 0 5px; border-top: 1px solid #11110f; }
+  .project-open svg { width: 32px; height: 32px; transition: transform .3s var(--ease); }
+  .project-open:hover svg, .project-open:focus-visible svg { transform: translate(5px, -5px); }
+  .project-media:hover { transform: translate(-7px, -8px) rotate(-2deg); filter: drop-shadow(27px 32px 0 var(--section-color)); }
+  .reverse .project-media:hover { transform: translate(7px, -8px) rotate(2deg); }
+  .project-media:hover :global(.project-visual) { clip-path: polygon(2% 3%, 98% 0, 100% 97%, 0 100%); transform: scale(.985); }
+  .archive-word { position: absolute; z-index: -1; right: 0; bottom: -38px; color: color-mix(in srgb, var(--section-color) 65%, transparent); font-size: clamp(20px, 3.4vw, 54px); white-space: nowrap; }
+  .reverse .archive-word { right: auto; left: 0; }
+  @media (max-width: 860px) {
+    .project-row { grid-template-columns: 34px repeat(7, minmax(0, 1fr)); grid-template-rows: auto auto; min-height: 0; margin-block: 85px 110px; }
+    .project-row::before, .project-row.reverse::before { inset: 3% 0 0 12px; }
+    .archive-rail { grid-column: 1; grid-row: 1 / 3; }
+    .project-media, .reverse .project-media { grid-column: 2 / 9; grid-row: 1; align-self: start; transform: rotate(-1deg); filter: drop-shadow(9px 12px 0 #11110f); }
+    .reverse .project-media { transform: rotate(1deg); }
+    .project-media :global(.project-visual) { min-height: 330px; height: 70vw; }
+    .project-copy, .reverse .project-copy { grid-column: 2 / 9; grid-row: 2; align-self: start; width: calc(100% - 18px); margin: -64px 0 0 18px; padding: 24px; transform: rotate(.4deg); box-shadow: -7px 7px 0 var(--section-color); }
+    .reverse .project-copy { transform: rotate(-.4deg); }
+    .project-copy h2 { font-size: var(--type-project-title); }
+    .archive-word { bottom: -34px; max-width: 100%; overflow: hidden; font-size: 17px; }
+  }
+  @media (max-width: 480px) {
+    .project-copy, .reverse .project-copy { width: calc(100% - 8px); margin-top: -42px; margin-left: 8px; padding: 19px; }
+    .project-copy h2 { margin-block: 22px 14px; }
+    .project-copy p { font-size: 16px; line-height: 1.65; }
+    .project-meta span:last-child { max-width: 68%; text-align: right; }
+    .project-media::after { inset: 8px -8px -8px 8px; }
+  }
+</style>
