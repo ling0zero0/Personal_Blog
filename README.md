@@ -2,7 +2,7 @@
 
 
 
-An immersive bilingual personal site built with Astro, Three.js, GSAP, and Markdown content collections.
+An immersive bilingual personal site built with Astro, native TypeScript interactions, CSS/WAAPI animation, and Markdown content collections.
 
 ## Local development
 
@@ -23,20 +23,20 @@ npm run build       # Type-check and static production build
 npm run preview     # Preview the production build
 npm run project:add # Validate and add a project from an intake JSON file
 npm run project:check # Validate all project manifests and images
-npm run test:e2e    # Desktop and mobile Playwright coverage
+npm run test:e2e    # Chromium desktop/mobile plus core WebKit and axe coverage
 ```
 
 ## Content
 
-Blog posts live in `src/content/blog/zh` and `src/content/blog/en`. Each translation uses the same `translationKey` and provides title, description, date, tags, language, and draft metadata.
+Blog posts live in `src/content/blog/zh` and `src/content/blog/en`. Translations share a `translationKey`; their slugs may differ, and language links/hreflang metadata are generated from the validated translation index in `src/data/blog.ts`.
 
 Projects live in `src/content/projects`, with one folder containing the manifest and optimized images for each project. See [docs/adding-projects.md](docs/adding-projects.md) for the repeatable addition workflow.
 
-Profile copy is maintained in `src/data`. The initial AI navigator is local and deterministic; its adapter is in `src/scripts/intent.ts`, so a server-side model provider can replace it later without changing the command palette UI.
+Locale, route, site, and project validation rules live in `src/config`. Profile copy remains in `src/data`. The command navigator is local and deterministic; its adapter is in `src/scripts/intent.ts`, so a server-side model provider can replace it later without changing the command palette UI.
 
 ## Interaction and fallbacks
 
 - Press `Ctrl+K` or `Cmd+K` to open the AI navigator.
-- Ambient audio is off by default and its opt-in state is stored locally.
-- The Three.js scene lowers pixel ratio and geometry density on mobile, pauses in hidden tabs, responds to pointer/touch/scroll, and provides a static fallback when WebGL is unavailable.
-- `prefers-reduced-motion` removes nonessential animation and slows the ambient scene.
+- Ambient audio is off by default. A remembered preference still requires a fresh click after reload because browsers do not permit automatic playback.
+- The home portal keeps visual, keyboard, ARIA, and dialog focus states synchronized.
+- `prefers-reduced-motion` presents the portal's final open state while keeping both archives and all navigation available.

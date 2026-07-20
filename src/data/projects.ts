@@ -1,27 +1,12 @@
 import { getCollection } from 'astro:content';
-import type { ImageMetadata } from 'astro';
-import type { Locale } from './site';
+import type { CollectionEntry } from 'astro:content';
 
-export type LocalizedText = Record<Locale, string>;
+type ProjectData = CollectionEntry<'projects'>['data'];
 
-export type ProjectImage = {
-  src: ImageMetadata;
-  alt: LocalizedText;
-};
+export type ProjectImage = ProjectData['images'][number];
 
-export type Project = {
-  slug: string;
-  year: string;
+export type Project = Omit<ProjectData, 'order' | 'images'> & {
   index: string;
-  color: string;
-  tags: string[];
-  title: LocalizedText;
-  summary: LocalizedText;
-  description: LocalizedText;
-  role: LocalizedText;
-  outcome: LocalizedText;
-  href: string;
-  linkLabel?: LocalizedText;
   poster?: ProjectImage;
   gallery?: ProjectImage[];
 };
@@ -42,24 +27,11 @@ for (const entry of orderedEntries) {
 }
 
 export const projects: Project[] = orderedEntries.map(({ data }, position) => {
-  const images = data.images.map((image) => ({
-    src: image.src,
-    alt: image.alt,
-  }));
+  const { order: _order, images, ...project } = data;
 
   return {
-    slug: data.slug,
-    year: data.year,
+    ...project,
     index: String(position + 1).padStart(2, '0'),
-    color: data.color,
-    tags: data.tags,
-    title: data.title,
-    summary: data.summary,
-    description: data.description,
-    role: data.role,
-    outcome: data.outcome,
-    href: data.href,
-    linkLabel: data.linkLabel,
     poster: images[0],
     gallery: images.length > 0 ? images : undefined,
   };

@@ -20,15 +20,13 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.5.0",
     "astro": "^7.1.1",
-    "gsap": "^3.13.0",
     "lucide-astro": "^0.556.0",
-    "three": "^0.178.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.54.0",
-    "@types/three": "^0.178.0",
     "sharp": "^0.34.5",
     "typescript": "^5.8.0"
   }

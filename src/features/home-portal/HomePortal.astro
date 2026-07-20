@@ -1,0 +1,22 @@
+---
+import type { Locale } from '../../config/locales';
+import pastDesktop from '../../assets/images/home/past-door.webp';
+import futureDesktop from '../../assets/images/home/future-door.webp';
+import PortalStage from './PortalStage.astro';
+import ArchiveDialog from './ArchiveDialog.astro';
+import { getHomePortalContent } from './content';
+import './portal.css';
+
+const { lang } = Astro.props as { lang: Locale };
+const { copy, timeline } = getHomePortalContent(lang);
+---
+<div class="home-portal-feature" data-home-portal-root>
+  <PortalStage lang={lang} copy={copy} />
+  <ArchiveDialog kind="past" copy={copy} timeline={timeline} backdrop={pastDesktop} />
+  <ArchiveDialog kind="future" copy={copy} backdrop={futureDesktop} />
+</div>
+
+<script>
+  import { initializeHomePortals } from './portal-controller';
+  initializeHomePortals();
+</script>

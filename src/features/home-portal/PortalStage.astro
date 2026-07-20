@@ -1,0 +1,64 @@
+---
+import { ArrowUpRight } from 'lucide-astro';
+import type { Locale } from '../../config/locales';
+import type { HomePortalCopy } from './content';
+import pastDesktop from '../../assets/images/home/past-door.webp';
+import futureDesktop from '../../assets/images/home/future-door.webp';
+import innerDesktop from '../../assets/images/home/inner-world.webp';
+import pastMobile from '../../assets/images/home/past-door-mobile.webp';
+import futureMobile from '../../assets/images/home/future-door-mobile.webp';
+import innerMobile from '../../assets/images/home/inner-world-mobile.webp';
+
+const { lang, copy } = Astro.props as { lang: Locale; copy: HomePortalCopy };
+---
+<section id="portal" class="portal-scroll" data-home-portal data-state="closed" data-section-anchor>
+  <div class="portal-stage" tabindex="-1">
+    <div class="inner-world" aria-hidden="true">
+      <picture>
+        <source media="(max-width: 760px)" srcset={innerMobile.src} />
+        <img src={innerDesktop.src} alt="" width={innerDesktop.width} height={innerDesktop.height} />
+      </picture>
+      <div class="inner-shade"></div>
+    </div>
+    <span class="inner-number mono" aria-hidden="true">03</span>
+    <div class="inner-copy" data-portal-content aria-hidden="true" inert>
+      <div class="inner-card">
+        <span class="mono">{copy.innerKicker}</span>
+        <blockquote>{copy.quote.map((line) => <span>{line}</span>)}</blockquote>
+        <p>{copy.reflection}</p>
+        <strong>{copy.push}</strong>
+        <div class="reduced-motion-archives" role="group" aria-label={copy.reducedArchivesLabel}>
+          <button type="button" data-open-archive="past" aria-controls="past-archive" aria-haspopup="dialog">{copy.pastTitle}<ArrowUpRight /></button>
+          <button type="button" data-open-archive="future" aria-controls="future-archive" aria-haspopup="dialog">{copy.futureTitle}<ArrowUpRight /></button>
+        </div>
+        <nav aria-label={copy.continueLabel}>
+          <a href={`/${lang}/projects`}>{copy.projects}<ArrowUpRight /></a>
+          <a href={`/${lang}/journal`}>{copy.writing}<ArrowUpRight /></a>
+          <a href={`/${lang}/about`}>{copy.about}<ArrowUpRight /></a>
+        </nav>
+      </div>
+    </div>
+
+    <button class="door door-past" type="button" data-portal-door data-open-archive="past" aria-controls="past-archive" aria-haspopup="dialog">
+      <picture>
+        <source media="(max-width: 760px)" srcset={pastMobile.src} />
+        <img src={pastDesktop.src} alt="" width={pastDesktop.width} height={pastDesktop.height} />
+      </picture>
+      <span class="door-shade"></span>
+      <span class="door-rail mono"><i>PAST</i><b>01</b><i>1991—2012+</i></span>
+      <span class="door-number mono">FILE / 01</span>
+      <span class="door-copy"><small class="mono">{copy.pastKicker}</small><b>{copy.pastTitle}</b><em>{copy.pastHint}<ArrowUpRight /></em></span>
+    </button>
+    <button class="door door-future" type="button" data-portal-door data-open-archive="future" aria-controls="future-archive" aria-haspopup="dialog">
+      <picture>
+        <source media="(max-width: 760px)" srcset={futureMobile.src} />
+        <img src={futureDesktop.src} alt="" width={futureDesktop.width} height={futureDesktop.height} />
+      </picture>
+      <span class="door-shade"></span>
+      <span class="door-rail mono"><i>NEXT</i><b>02</b><i>FIELD / READY</i></span>
+      <span class="door-number mono">MISSION / 02</span>
+      <span class="door-copy"><small class="mono">{copy.futureKicker}</small><b>{copy.futureTitle}</b><em>{copy.futureHint}<ArrowUpRight /></em></span>
+    </button>
+    <div class="portal-controls"><button class="portal-open-trigger" type="button" data-open-doors>{copy.enter}</button></div>
+  </div>
+</section>

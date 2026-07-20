@@ -1,0 +1,60 @@
+---
+import { BriefcaseBusiness, Clock3, Mail, MapPin, Plane, X } from 'lucide-astro';
+import type { ImageMetadata } from 'astro';
+import type { HomePortalCopy, TimelineEntry } from './content';
+
+const { kind, copy, timeline = [], backdrop } = Astro.props as {
+  kind: 'past' | 'future';
+  copy: HomePortalCopy;
+  timeline?: TimelineEntry[];
+  backdrop: ImageMetadata;
+};
+const isPast = kind === 'past';
+const title = isPast ? copy.pastTitle : copy.futureTitle;
+const kicker = isPast ? copy.pastKicker : copy.futureKicker;
+const lead = isPast ? copy.pastLead : copy.futureLead;
+---
+<dialog
+  id={`${kind}-archive`}
+  class:list={['archive-dialog', `archive-${kind}`]}
+  data-archive={kind}
+  aria-labelledby={`${kind}-archive-title`}
+>
+  <div class="archive-backdrop" aria-hidden="true"><img src={backdrop.src} alt="" width={backdrop.width} height={backdrop.height} /></div>
+  <button class="archive-close mono" type="button" data-close-archive><X />{copy.close}</button>
+  <div class:list={['archive-layout', { 'future-layout': !isPast }]}>
+    <header>
+      <span class="mono">{kicker}</span>
+      <h2 id={`${kind}-archive-title`}>{title}</h2>
+      <p>{lead}</p>
+      <i class="archive-stamp mono" aria-hidden="true" set:html={isPast ? 'PERSONAL<br />FILE / 01' : 'FIELD<br />READY'} />
+    </header>
+    {isPast ? (
+      <ol class="timeline">
+        {timeline.map((item, index) => <li>
+          <span class="timeline-index mono">{String(index + 1).padStart(2, '0')}</span>
+          <div class="timeline-entry">
+            <small class="mono">{item.period}</small>
+            <h3>{item.title}</h3>
+            <p>{item.story}</p>
+            <details>
+              <summary>{copy.meaning}</summary>
+              <p>{item.meaning}</p>
+              <div class="timeline-tags">{item.tags.map((tag) => <span class="mono">{tag}</span>)}</div>
+            </details>
+          </div>
+        </li>)}
+      </ol>
+    ) : (
+      <div class="mission-grid">
+        <article><BriefcaseBusiness /><small class="mono">ROLE / ASSIGNMENT</small><h3>{copy.role}</h3><p>{copy.roleSub}</p></article>
+        <article><MapPin /><small class="mono">BASE / LOCATION</small><h3>{copy.location}</h3><p>{copy.locationNote}</p></article>
+        <article><Clock3 /><small class="mono">STATUS / AVAILABILITY</small><h3>{copy.work} / {copy.available}</h3><p>{copy.availableNote}</p></article>
+        <article><span class="mission-symbol">¥</span><small class="mono">COMPENSATION</small><h3>{copy.pay}</h3><p>{copy.payNote}</p></article>
+        <article><Plane /><small class="mono">FIELD WORK</small><h3>{copy.travel}</h3><p>{copy.travelNote}</p></article>
+        <article><Mail /><small class="mono">CONTACT</small><h3><a href={`mailto:${copy.email}`}>{copy.email}</a></h3><p>{copy.emailNote}</p></article>
+        <article class="dossier-card"><span class="mission-symbol">?</span><small class="mono">DOSSIER / CV</small><h3>{copy.dossier}</h3><p>{copy.dossierNote}</p></article>
+      </div>
+    )}
+  </div>
+</dialog>

@@ -1,0 +1,14 @@
+{
+  "localizedKeys": ["zh", "en"],
+  "localizedFields": ["title", "summary", "description", "role", "outcome"],
+  "coreFields": ["slug", "year", "color", "tags", "title", "summary", "description", "role", "outcome", "href", "linkLabel"],
+  "intakeFields": ["slug", "position", "year", "color", "tags", "title", "summary", "description", "role", "outcome", "href", "linkLabel", "images"],
+  "manifestFields": ["slug", "order", "year", "color", "tags", "title", "summary", "description", "role", "outcome", "href", "linkLabel", "images"],
+  "intakeImageFields": ["file", "alt"],
+  "manifestImageFields": ["src", "alt"],
+  "slugPattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+  "yearPattern": "^\\d{4}$",
+  "colorPattern": "^#[0-9a-fA-F]{6}$",
+  "manifestImagePattern": "^\\./[^/\\\\]+\\.webp$",
+  "allowedLinkProtocols": ["http:", "https:"]
+}

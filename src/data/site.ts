@@ -1,15 +1,11 @@
-export type Locale = 'zh' | 'en';
-
-export const locales: Locale[] = ['zh', 'en'];
-
 export const ui = {
   zh: {
-    skip: '跳到正文', nav: ['首页', '项目', '文章', '关于'], navPaths: ['', 'projects', 'journal', 'about'],
+    skip: '跳到正文', nav: { home: '首页', projects: '项目', journal: '文章', about: '关于' },
     command: 'AI 导航', soundOn: '关闭环境声', soundOff: '开启环境声', menu: '打开菜单', close: '关闭',
     footer: '以代码、文字与实验构建。', status: '可参与新项目', locale: 'EN',
   },
   en: {
-    skip: 'Skip to content', nav: ['Home', 'Projects', 'Journal', 'About'], navPaths: ['', 'projects', 'journal', 'about'],
+    skip: 'Skip to content', nav: { home: 'Home', projects: 'Projects', journal: 'Journal', about: 'About' },
     command: 'AI navigator', soundOn: 'Mute ambience', soundOff: 'Enable ambience', menu: 'Open menu', close: 'Close',
     footer: 'Built through code, words, and experiments.', status: 'Available for selected work', locale: '中',
   },
@@ -19,7 +15,7 @@ export const profile = {
   zh: {
     name: '花辞树', role: '创意开发者 / AI 产品设计师', statement: '在代码、叙事与机器智能的交界处，构建有感知的数字体验。',
     intro: '我关注复杂技术如何变得可见、可用，也值得被记住。工作横跨生成式界面、实时图形与智能产品原型。',
-    location: '上海 / 远程', email: 'hello@shenye.space',
+    location: '上海 / 远程', email: '3502568552@qq.com',
     skills: ['创意开发', '交互设计', '生成式 AI', '实时图形', '产品原型', '技术叙事'],
   },
   en: {

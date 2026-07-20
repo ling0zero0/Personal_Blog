@@ -4,7 +4,9 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import CommandPalette from '../components/CommandPalette.astro';
 import type { ImageMetadata } from 'astro';
-import type { Locale } from '../data/site';
+import { defaultLocale, localeConfig, locales, type Locale } from '../config/locales';
+import { inferLocalizedUrls, type LocalizedUrls } from '../config/routes';
+import { siteConfig } from '../config/site';
 import { ui } from '../data/site';
 
 type Props = {
@@ -17,23 +19,25 @@ type Props = {
   tags?: string[];
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   hideFooter?: boolean;
+  alternates?: LocalizedUrls;
 };
 
-const { title, description, lang, image, contentType = 'website', publishedDate, tags = [], jsonLd, hideFooter = false } = Astro.props as Props;
+const { title, description, lang, image, contentType = 'website', publishedDate, tags = [], jsonLd, hideFooter = false, alternates } = Astro.props as Props;
 const site = Astro.site ?? Astro.url.origin;
 const canonical = new URL(Astro.url.pathname, site);
 const imagePath = typeof image === 'string' ? image : image?.src;
-const socialImage = new URL(imagePath ?? '/og.svg', site);
+const socialImage = new URL(imagePath ?? siteConfig.defaultSocialImage, site);
 const publishedDateIso = publishedDate ? new Date(publishedDate).toISOString() : undefined;
 const pathParts = Astro.url.pathname.split('/').filter(Boolean);
 const hasLocalizedPath = pathParts[0] === lang;
-const localizedUrls = hasLocalizedPath
-  ? (['zh', 'en'] as const).map((locale) => {
-      const parts = [...pathParts];
-      parts[0] = locale;
-      return { locale, url: new URL(`/${parts.join('/')}${Astro.url.pathname.endsWith('/') ? '/' : ''}`, site) };
-    })
-  : [];
+const localizedPaths = { ...(alternates ?? (hasLocalizedPath ? inferLocalizedUrls(Astro.url.pathname) : {})) };
+if (hasLocalizedPath && !localizedPaths[lang]) localizedPaths[lang] = Astro.url.pathname;
+const localizedUrls = locales.flatMap((locale) => {
+  const path = localizedPaths[locale];
+  return path ? [{ locale, url: new URL(path, site) }] : [];
+});
+const headerAlternateUrls = Object.fromEntries(localizedUrls.map(({ locale, url }) => [locale, `${url.pathname}${url.search}`])) as LocalizedUrls;
+const defaultAlternate = localizedUrls.find(({ locale }) => locale === defaultLocale) ?? localizedUrls.find(({ locale }) => locale === lang);
 const jsonLdSource = jsonLd ? JSON.stringify(jsonLd) : undefined;
 const serializedJsonLd = jsonLdSource
   ?.replace(/</g, '\\u003c')
@@ -43,7 +47,7 @@ const route = Astro.url.pathname.split('/').filter(Boolean)[1] || 'home';
 const section = ['projects', 'journal', 'about'].includes(route) ? route : 'home';
 ---
 <!doctype html>
-<html lang={lang === 'zh' ? 'zh-CN' : 'en'}>
+<html lang={localeConfig[lang].htmlLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -51,15 +55,15 @@ const section = ['projects', 'journal', 'about'].includes(route) ? route : 'home
     <meta name="description" content={description} />
     <meta name="theme-color" content="#0c0c0b" />
     <link rel="canonical" href={canonical} />
-    {localizedUrls.map(({ locale, url }) => <link rel="alternate" hreflang={locale === 'zh' ? 'zh-CN' : 'en'} href={url} />)}
-    {hasLocalizedPath && <link rel="alternate" hreflang="x-default" href={localizedUrls.find(({ locale }) => locale === 'en')?.url} />}
-    <link rel="alternate" type="application/rss+xml" title="花辞树 / Huacishu Journal" href={new URL('/rss.xml', site)} />
+    {localizedUrls.map(({ locale, url }) => <link rel="alternate" hreflang={localeConfig[locale].htmlLang} href={url} />)}
+    {hasLocalizedPath && defaultAlternate && <link rel="alternate" hreflang="x-default" href={defaultAlternate.url} />}
+    <link rel="alternate" type="application/rss+xml" title={siteConfig.rssTitle} href={new URL(siteConfig.rssPath, site)} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
     <meta property="og:type" content={contentType} />
-    <meta property="og:site_name" content="花辞树" />
-    <meta property="og:locale" content={lang === 'zh' ? 'zh_CN' : 'en_US'} />
-    <meta property="og:locale:alternate" content={lang === 'zh' ? 'en_US' : 'zh_CN'} />
+    <meta property="og:site_name" content={siteConfig.name} />
+    <meta property="og:locale" content={localeConfig[lang].ogLocale} />
+    {localizedUrls.filter(({ locale }) => locale !== lang).map(({ locale }) => <meta property="og:locale:alternate" content={localeConfig[locale].ogLocale} />)}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -84,7 +88,7 @@ const section = ['projects', 'journal', 'about'].includes(route) ? route : 'home
       <div class="stage-cross stage-cross-b" data-depth="front"></div>
       <div class="stage-rail"><span>HCS / 2.5D</span><span>31.2304 N</span><span>{section.toUpperCase()} / ACTIVE</span></div>
     </div>
-    <Header lang={lang} />
+    <Header lang={lang} alternateUrls={headerAlternateUrls} />
     <main id="main"><slot /></main>
     {!hideFooter && <Footer lang={lang} />}
     <CommandPalette lang={lang} />

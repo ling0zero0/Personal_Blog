@@ -1,21 +1,23 @@
 ---
 import { ArrowLeft, ArrowUpRight } from 'lucide-astro';
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import SectionNavigator from '../../../components/SectionNavigator.astro';
-import type { Locale } from '../../../data/site';
-const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+import { localeConfig, type Locale } from '../../../config/locales';
+import { formatPostDate, getPostUrl, getPublishedPosts, getReadingTime, getRelatedPosts, getTranslationAlternates } from '../../../data/blog';
+const allPosts = await getPublishedPosts();
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => !data.draft);
-  return posts.map((post) => ({ params: { lang: post.data.lang, slug: post.id.split('/').pop() }, props: { post } }));
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({
+    params: { lang: post.data.lang, slug: getPostUrl(post).split('/').pop() },
+    props: { post, alternates: getTranslationAlternates(post, posts) },
+  }));
 }
 const lang = Astro.params.lang as Locale;
-const { post } = Astro.props;
+const { post, alternates } = Astro.props;
 const { Content, headings } = await render(post);
-const siblings = allPosts.filter((item) => item.data.lang === lang && item.id !== post.id && item.data.tags.some((tag: string) => post.data.tags.includes(tag))).slice(0, 2);
-const format = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
-const words = (post.body || '').trim().split(/\s+|(?=[\u4e00-\u9fff])/).length;
-const minutes = Math.max(2, Math.ceil(words / (lang === 'zh' ? 350 : 220)));
+const siblings = getRelatedPosts(post, allPosts);
+const minutes = getReadingTime(post);
 const copy = lang === 'zh' ? { back: '全部文章', min: '分钟阅读', related: '继续阅读', progress: '阅读进度' } : { back: 'All writing', min: 'min read', related: 'Continue reading', progress: 'Reading progress' };
 const sectionItems = headings
   .filter((heading) => heading.depth >= 2 && heading.depth <= 3)
@@ -29,7 +31,7 @@ const jsonLd = {
   description: post.data.description,
   datePublished: post.data.pubDate.toISOString(),
   keywords: post.data.tags,
-  inLanguage: lang === 'zh' ? 'zh-CN' : 'en',
+  inLanguage: localeConfig[lang].htmlLang,
   url: canonical.href,
   image: socialImage.href,
   author: { '@type': 'Person', name: '花辞树', url: new URL(`/${lang}/about`, Astro.site).href },
@@ -43,9 +45,10 @@ const jsonLd = {
   publishedDate={post.data.pubDate}
   tags={post.data.tags}
   jsonLd={jsonLd}
+  alternates={alternates}
 >
   <SectionNavigator lang={lang} items={sectionItems} />
-  <div class="reading-progress" role="progressbar" aria-label={copy.progress} aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+  <div class="reading-progress" data-reading-progress role="progressbar" aria-label={copy.progress} aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
   <article class="article-shell">
     <header class="article-header" data-reveal-group>
       <div class="front-page container">
@@ -55,7 +58,7 @@ const jsonLd = {
           <span class="mono">ISSUE / {String(minutes).padStart(2, '0')}</span>
         </div>
         <div class="article-coordinate mono" aria-hidden="true">02 / SIGNAL DOCUMENT / {String(minutes).padStart(2, '0')}</div>
-        <div class="article-meta mono" data-reveal><span>{format.format(post.data.pubDate)}</span><span>{minutes} {copy.min}</span><span>{post.data.tags.join(' / ')}</span></div>
+        <div class="article-meta mono" data-reveal><span>{formatPostDate(post, { year: 'numeric', month: 'long', day: 'numeric' })}</span><span>{minutes} {copy.min}</span><span>{post.data.tags.join(' / ')}</span></div>
         <h1 data-reveal>{post.data.title}</h1>
         <p data-reveal>{post.data.description}</p>
         <div class="panel-mark mono" aria-hidden="true">READ / SCROLL<br />NO. {String(minutes).padStart(2, '0')}</div>
@@ -66,7 +69,7 @@ const jsonLd = {
     </div>
   </article>
   {siblings.length > 0 && <section class="related section">
-    <div class="container"><span class="eyebrow">{copy.related}</span><div class="related-list">{siblings.map((item) => <a href={`/${lang}/journal/${item.id.split('/').pop()}`}><span class="mono">{item.data.tags[0]}</span><h2>{item.data.title}</h2><ArrowUpRight /></a>)}</div></div>
+    <div class="container"><span class="eyebrow">{copy.related}</span><div class="related-list">{siblings.map((item) => <a href={getPostUrl(item)}><span class="mono">{item.data.tags[0]}</span><h2>{item.data.title}</h2><ArrowUpRight /></a>)}</div></div>
   </section>}
 </BaseLayout>
 <style is:global>
@@ -99,9 +102,11 @@ const jsonLd = {
   .prose h2::before { content: ''; position: absolute; left: 0; top: -3px; width: 72px; height: 5px; background: var(--section-color); transform: skewX(-28deg); }
   .prose h3 { margin: 2em 0 .6em; font-size: 25px; }
   .prose p { margin: 0 0 1.5em; }
-  .prose strong { color: var(--accent); font-weight: 600; }
+  .prose strong { color: var(--accent-text); font-weight: 600; }
   .prose pre { overflow: auto; margin: 2.4em 0; padding: 24px; border-radius: 0; font: 13px/1.7 'DM Mono', monospace; }
   .prose a, .prose code:not(pre code) { overflow-wrap: break-word; word-break: normal; }
+  .prose a { color: var(--section-color); text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .2em; }
+  .prose a:hover, .prose a:focus-visible { text-decoration-thickness: .14em; }
   .prose code:not(pre code) { white-space: normal; padding: 2px 5px; background: var(--surface); font: 14px 'DM Mono', monospace; }
   .related-list { margin-top: 50px; border-top: 1px solid var(--line); }
   .related-list a { display: grid; grid-template-columns: 160px 1fr auto; align-items: center; gap: 25px; padding-block: 34px; border-bottom: 1px solid var(--line); }
@@ -132,7 +137,6 @@ const jsonLd = {
   }
 </style>
 <script>
-  const progress = document.querySelector<HTMLElement>('.reading-progress span'); const progressRoot = document.querySelector<HTMLElement>('.reading-progress');
-  function updateReading() { const article = document.querySelector<HTMLElement>('.article-shell'); if (!article || !progress) return; const start = article.offsetTop; const total = article.offsetHeight - innerHeight; const value = Math.max(0, Math.min(1, (scrollY - start) / total)); progress.style.transform = `scaleX(${value})`; progressRoot?.setAttribute('aria-valuenow', String(Math.round(value * 100))); }
-  addEventListener('scroll', updateReading, { passive: true }); updateReading();
+  import { initializeReadingProgress } from '../../../features/journal/reading-progress-controller';
+  initializeReadingProgress();
 </script>

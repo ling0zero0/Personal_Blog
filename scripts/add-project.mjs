@@ -2,6 +2,7 @@ import { access, mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
+import projectContract from '../src/config/project-contract.json' with { type: 'json' };
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const projectsDir = path.join(rootDir, 'src', 'content', 'projects');
@@ -9,7 +10,11 @@ const manifestName = 'project.json';
 const imageWidth = 1600;
 const imageHeight = 1200;
 const imageQuality = 84;
-const localizedFields = ['title', 'summary', 'description', 'role', 'outcome'];
+const localizedFields = projectContract.localizedFields;
+const slugPattern = new RegExp(projectContract.slugPattern);
+const yearPattern = new RegExp(projectContract.yearPattern);
+const colorPattern = new RegExp(projectContract.colorPattern);
+const manifestImagePattern = new RegExp(projectContract.manifestImagePattern, 'i');
 
 function usage() {
   console.log(`
@@ -45,17 +50,23 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function assertKnownKeys(value, allowedKeys, context) {
+  const unknown = Object.keys(value).filter((key) => !allowedKeys.includes(key));
+  assert(unknown.length === 0, `${context} contains unknown field${unknown.length === 1 ? '' : 's'}: ${unknown.join(', ')}`);
+}
+
 function validateLocalized(value, field) {
   assert(value && typeof value === 'object' && !Array.isArray(value), `${field} must contain zh and en text.`);
+  assertKnownKeys(value, projectContract.localizedKeys, field);
   assert(typeof value.zh === 'string' && value.zh.trim(), `${field}.zh is required.`);
   assert(typeof value.en === 'string' && value.en.trim(), `${field}.en is required.`);
 }
 
 function validateCore(project) {
   assert(project && typeof project === 'object' && !Array.isArray(project), 'The intake file must contain a JSON object.');
-  assert(typeof project.slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(project.slug), 'slug must use lowercase kebab-case.');
-  assert(typeof project.year === 'string' && /^\d{4}$/.test(project.year), 'year must be a four-digit string.');
-  assert(typeof project.color === 'string' && /^#[0-9a-fA-F]{6}$/.test(project.color), 'color must be a six-digit hex value.');
+  assert(typeof project.slug === 'string' && slugPattern.test(project.slug), 'slug must use lowercase kebab-case.');
+  assert(typeof project.year === 'string' && yearPattern.test(project.year), 'year must be a four-digit string.');
+  assert(typeof project.color === 'string' && colorPattern.test(project.color), 'color must be a six-digit hex value.');
   assert(Array.isArray(project.tags) && project.tags.length > 0, 'tags must contain at least one item.');
   assert(project.tags.every((tag) => typeof tag === 'string' && tag.trim()), 'Every tag must be a non-empty string.');
   for (const field of localizedFields) validateLocalized(project[field], field);
@@ -63,10 +74,11 @@ function validateCore(project) {
 
   assert(typeof project.href === 'string', 'href is required.');
   const href = new URL(project.href);
-  assert(['http:', 'https:'].includes(href.protocol), 'href must use http or https.');
+  assert(projectContract.allowedLinkProtocols.includes(href.protocol), 'href must use http or https.');
 }
 
 function validateIntake(project) {
+  assertKnownKeys(project, projectContract.intakeFields, 'The intake file');
   validateCore(project);
   if (project.position !== undefined) {
     assert(Number.isInteger(project.position) && project.position > 0, 'position must be a positive integer.');
@@ -76,6 +88,7 @@ function validateIntake(project) {
   assert(Array.isArray(images), 'images must be an array.');
   for (const [index, image] of images.entries()) {
     assert(image && typeof image === 'object', `images[${index}] must be an object.`);
+    assertKnownKeys(image, projectContract.intakeImageFields, `images[${index}]`);
     assert(typeof image.file === 'string' && image.file.trim(), `images[${index}].file is required.`);
     assert(!path.isAbsolute(image.file) && !image.file.split(/[\\/]/).includes('..'), `images[${index}].file must stay inside the image directory.`);
     validateLocalized(image.alt, `images[${index}].alt`);
@@ -83,13 +96,15 @@ function validateIntake(project) {
 }
 
 function validateManifest(project) {
+  assertKnownKeys(project, projectContract.manifestFields, 'The project manifest');
   validateCore(project);
   assert(Number.isInteger(project.order) && project.order > 0, 'order must be a positive integer.');
   assert(Array.isArray(project.images), 'images must be an array.');
 
   for (const [index, image] of project.images.entries()) {
     assert(image && typeof image === 'object', `images[${index}] must be an object.`);
-    assert(typeof image.src === 'string' && /^\.\/[^/\\]+\.webp$/i.test(image.src), `images[${index}].src must reference a local WebP file.`);
+    assertKnownKeys(image, projectContract.manifestImageFields, `images[${index}]`);
+    assert(typeof image.src === 'string' && manifestImagePattern.test(image.src), `images[${index}].src must reference a local WebP file.`);
     validateLocalized(image.alt, `images[${index}].alt`);
   }
 }

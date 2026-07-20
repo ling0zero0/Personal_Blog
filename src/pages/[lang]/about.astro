@@ -6,7 +6,8 @@ import PageIntro from '../../components/PageIntro.astro';
 import SectionNavigator from '../../components/SectionNavigator.astro';
 import SignalBand from '../../components/SignalBand.astro';
 import avatar from '../../assets/images/about/avatar.webp';
-import { locales, profile, experience, type Locale } from '../../data/site';
+import { locales, type Locale } from '../../config/locales';
+import { profile, experience } from '../../data/site';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
 const lang = Astro.params.lang as Locale;
 const p = profile[lang];
@@ -113,10 +114,10 @@ const navigatorItems = [
   .timeline time { color: var(--muted); }
   .timeline h2 { margin: 0 0 14px; font-size: clamp(25px, 3vw, 42px); font-weight: 500; }
   .timeline p { max-width: 620px; margin: 0; color: var(--muted); line-height: 1.65; }
-  .contact-band { position: relative; overflow: hidden; padding-block: clamp(90px, 13vw, 180px); background: var(--section-color); color: #11110f; }
+  .contact-band { position: relative; overflow: hidden; padding-block: clamp(90px, 13vw, 180px); background: var(--section-color); color: #050504; }
   .contact-band::before { content: 'OPEN / SIGNAL'; position: absolute; inset: auto -3vw -2vw auto; color: #11110f18; font: 600 clamp(70px, 14vw, 210px)/.8 'DM Mono', monospace; white-space: nowrap; animation: contact-drift 12s ease-in-out infinite alternate; }
-  .contact-band .eyebrow { color: #ffffffb5; }
-  .contact-band a { display: flex; justify-content: space-between; align-items: center; gap: 30px; margin-block: 50px; padding-bottom: 20px; border-bottom: 2px solid #fff; font-size: clamp(38px, 5.5vw, 80px); line-height: var(--title-line-height); letter-spacing: var(--title-letter-spacing); font-weight: 600; overflow-wrap: break-word; }
+  .contact-band .eyebrow { color: #050504; }
+  .contact-band a { display: flex; justify-content: space-between; align-items: center; gap: 30px; margin-block: 50px; padding-bottom: 20px; border-bottom: 2px solid currentColor; font-size: clamp(38px, 5.5vw, 80px); line-height: var(--title-line-height); letter-spacing: var(--title-letter-spacing); font-weight: 600; overflow-wrap: break-word; }
   .contact-band a svg { flex: 0 0 auto; width: clamp(35px, 6vw, 80px); height: auto; }
   .contact-meta { display: flex; justify-content: space-between; }
   @keyframes portrait-titles { to { transform: translateX(-50%); } }

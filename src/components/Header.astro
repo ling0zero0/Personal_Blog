@@ -1,30 +1,32 @@
 ---
 import { AudioLines, Command, Menu, X } from 'lucide-astro';
-import type { Locale } from '../data/site';
+import { getAlternateLocale, type Locale } from '../config/locales';
+import { getLocalizedPath, navigationRoutes, type LocalizedUrls } from '../config/routes';
 import { ui, profile } from '../data/site';
-const { lang } = Astro.props as { lang: Locale };
+const { lang, alternateUrls = {} } = Astro.props as { lang: Locale; alternateUrls?: LocalizedUrls };
 const t = ui[lang];
 const path = Astro.url.pathname;
 const currentSegment = path.split('/')[2] || '';
-const switchPath = `/${lang === 'zh' ? 'en' : 'zh'}/${path.split('/').slice(2).join('/')}`;
+const alternateLocale = getAlternateLocale(lang);
+const switchPath = alternateLocale ? alternateUrls[alternateLocale] : undefined;
 ---
 <header class="site-header">
   <a class="brand" href={`/${lang}/`} aria-label={lang === 'zh' ? '花辞树首页' : '花辞树 home'}>
     <span class="brand-mark"></span><span>花辞树</span>
   </a>
   <nav class="desktop-nav" aria-label={lang === 'zh' ? '主导航' : 'Primary navigation'}>
-    {t.nav.map((label, index) => <a href={`/${lang}/${t.navPaths[index]}`} aria-current={currentSegment === t.navPaths[index] ? 'page' : undefined}>{label}</a>)}
+    {navigationRoutes.map((route) => <a href={getLocalizedPath(lang, route.segment)} aria-current={currentSegment === route.segment ? 'page' : undefined}>{t.nav[route.key]}</a>)}
   </nav>
   <div class="header-actions">
-    <button class="icon-button sound-button" id="sound-toggle" aria-label={t.soundOff} title={t.soundOff}><AudioLines size={17} /></button>
-    <button class="icon-button command-open" aria-label={t.command} title={`${t.command} (Ctrl K)`}><Command size={17} /></button>
-    <a class="language-link" href={switchPath} hreflang={lang === 'zh' ? 'en' : 'zh'} aria-label={lang === 'zh' ? 'Switch to English' : '切换到中文'}>{t.locale}</a>
-    <button class="icon-button mobile-menu-button" aria-label={t.menu} aria-expanded="false"><Menu class="menu-icon" size={18} /><X class="close-icon" size={18} style="display:none" /></button>
+    <button class="icon-button sound-button" id="sound-toggle" type="button" aria-label={t.soundOff} title={t.soundOff}><AudioLines size={17} /></button>
+    <button class="icon-button command-open" type="button" aria-label={t.command} title={`${t.command} (Ctrl K)`}><Command size={17} /></button>
+    {switchPath && alternateLocale && <a class="language-link" href={switchPath} hreflang={alternateLocale} aria-label={lang === 'zh' ? 'Switch to English' : '切换到中文'}>{t.locale}</a>}
+    <button class="icon-button mobile-menu-button" type="button" aria-label={t.menu} aria-expanded="false"><Menu class="menu-icon" size={18} /><X class="close-icon" size={18} style="display:none" /></button>
   </div>
 </header>
 <aside class="mobile-menu" data-open="false">
   <nav aria-label={lang === 'zh' ? '移动导航' : 'Mobile navigation'}>
-    {t.nav.map((label, index) => <a href={`/${lang}/${t.navPaths[index]}`}>{label}</a>)}
+    {navigationRoutes.map((route) => <a href={getLocalizedPath(lang, route.segment)}>{t.nav[route.key]}</a>)}
   </nav>
   <div class="mobile-menu-meta mono"><span>{profile[lang].location}</span><span>© 2026</span></div>
 </aside>

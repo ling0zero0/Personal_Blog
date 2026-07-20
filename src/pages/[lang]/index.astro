@@ -1,15 +1,14 @@
 ﻿---
 import { ArrowUpRight } from 'lucide-astro';
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import HomePortal from '../../components/HomePortal.astro';
+import HomePortal from '../../features/home-portal/HomePortal.astro';
 import ArrowLink from '../../components/ArrowLink.astro';
-import { locales, type Locale } from '../../data/site';
+import { locales, type Locale } from '../../config/locales';
+import { formatPostDate, getFeaturedPosts, getPostUrl } from '../../data/blog';
 import { projects } from '../../data/projects';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
 const lang = Astro.params.lang as Locale;
-const posts = (await getCollection('blog', ({ data }) => data.lang === lang && !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 2);
+const posts = await getFeaturedPosts(lang, 2);
 const copy = lang === 'zh' ? {
   title: '花辞树 — 人格档案与下一次行动',
   description: '穿过过去与未来的两扇门，阅读人格档案、职业方向与支撑选择的内在信念。',
@@ -21,7 +20,7 @@ const copy = lang === 'zh' ? {
   archive: 'Project archive', archiveTitle: 'Every completed mission, archived once.', archiveDescription: 'The homepage tells the person and the choice. Complete cases, process, and outcomes live in the project archive.', archiveCount: 'Cases archived', archiveLink: 'Enter project archive',
   journal: 'Recent logs', journalLink: 'Read all logs', read: 'Read log',
 };
-const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'short', day: 'numeric' });---
+---
 <BaseLayout title={copy.title} description={copy.description} lang={lang} image={undefined}>
   <HomePortal lang={lang} />
 
@@ -45,10 +44,10 @@ const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { 
       <header class="section-head"><span class="eyebrow">04 / {copy.journal}</span><ArrowLink href={`/${lang}/journal`} label={copy.journalLink} /></header>
       <div class="home-posts">
         {posts.map((post, index) => <article class="home-post" data-reveal>
-          <a href={`/${lang}/journal/${post.id.split('/').pop()}`}>
+          <a href={getPostUrl(post)}>
             <div class="post-num mono">0{index + 1}</div>
             <div><h2>{post.data.title}</h2><p>{post.data.description}</p></div>
-            <div class="post-end"><span class="mono">{dateFormat.format(post.data.pubDate)}</span><ArrowUpRight /></div>
+            <div class="post-end"><span class="mono">{formatPostDate(post, { year: 'numeric', month: 'short', day: 'numeric' })}</span><ArrowUpRight /></div>
           </a>
         </article>)}
       </div>

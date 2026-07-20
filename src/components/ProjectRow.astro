@@ -2,7 +2,7 @@
 import { ArrowUpRight } from 'lucide-astro';
 import ProjectVisual from './ProjectVisual.astro';
 import type { Project } from '../data/projects';
-import type { Locale } from '../data/site';
+import type { Locale } from '../config/locales';
 const { project, lang, position = 0 } = Astro.props as { project: Project; lang: Locale; position?: number };
 const href = `/${lang}/projects/${project.slug}`;
 ---

@@ -1,18 +1,16 @@
 ---
 import { ArrowUpRight } from 'lucide-astro';
-import { getCollection } from 'astro:content';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageIntro from '../../../components/PageIntro.astro';
 import SignalBand from '../../../components/SignalBand.astro';
 import SectionNavigator from '../../../components/SectionNavigator.astro';
-import { locales, type Locale } from '../../../data/site';
+import { locales, type Locale } from '../../../config/locales';
+import { formatPostDate, getPostUrl, getPostsByLocale, getReadingTime } from '../../../data/blog';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
 const lang = Astro.params.lang as Locale;
-const posts = (await getCollection('blog', ({ data }) => data.lang === lang && !data.draft)).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const posts = await getPostsByLocale(lang);
 const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
 const copy = lang === 'zh' ? { title: '观察与笔记', eyebrow: '文章索引', description: '关于智能界面、实时媒介，以及技术如何改变我们的感知方式。', all: '全部', min: '分钟', empty: '没有匹配的文章。' } : { title: 'Observations & notes', eyebrow: 'Journal index', description: 'On intelligent interfaces, real-time media, and how technology changes the way we perceive.', all: 'All', min: 'min read', empty: 'No writing matches this filter.' };
-const format = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
-const readingTime = (body: string) => Math.max(2, Math.ceil(body.trim().split(/\s+|(?=[\u4e00-\u9fff])/).length / (lang === 'zh' ? 350 : 220)));
 const sectionItems = lang === 'zh'
   ? [{ id: 'journal-overview', label: '写作概览' }, { id: 'journal-list', label: '文章列表' }]
   : [{ id: 'journal-overview', label: 'Overview' }, { id: 'journal-list', label: 'Writing list' }];
@@ -23,18 +21,18 @@ const sectionItems = lang === 'zh'
     <PageIntro index="02" eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
   </div>
   <SignalBand index="02" label="JOURNAL / FEED" items={tags} />
-  <section id="journal-list" class="journal-index section" data-section-anchor>
+  <section id="journal-list" class="journal-index section" data-journal-filter data-section-anchor>
     <div class="container">
       <div class="tag-filters" role="group" aria-label={lang === 'zh' ? '按标签筛选' : 'Filter by tag'}>
-        <button class="tag-filter active" data-tag="all">{copy.all}</button>
-        {tags.map((tag) => <button class="tag-filter" data-tag={tag}>{tag}</button>)}
+        <button class="tag-filter active" type="button" data-tag="all" aria-pressed="true">{copy.all}</button>
+        {tags.map((tag) => <button class="tag-filter" type="button" data-tag={tag} aria-pressed="false">{tag}</button>)}
       </div>
       <div class="post-list">
         {posts.map((post, i) => <article class="post-row" data-tags={post.data.tags.join('|')} data-reveal>
-          <a href={`/${lang}/journal/${post.id.split('/').pop()}`}>
+          <a href={getPostUrl(post)}>
             <div class="post-index mono"><span>ENTRY</span>{String(i + 1).padStart(2, '0')}</div>
             <div class="post-copy"><h2>{post.data.title}</h2><p>{post.data.description}</p><div class="post-tags mono">{post.data.tags.map((tag) => <span>{tag}</span>)}</div></div>
-            <div class="post-meta mono"><span>{format.format(post.data.pubDate)}</span><span>{readingTime(post.body || '')} {copy.min}</span><ArrowUpRight size={22} /></div>
+            <div class="post-meta mono"><span>{formatPostDate(post, { year: 'numeric', month: 'short', day: 'numeric' })}</span><span>{getReadingTime(post)} {copy.min}</span><ArrowUpRight size={22} /></div>
           </a>
         </article>)}
       </div>
@@ -87,9 +85,6 @@ const sectionItems = lang === 'zh'
   }
 </style>
 <script>
-  const buttons = [...document.querySelectorAll<HTMLButtonElement>('.tag-filter')];
-  const rows = [...document.querySelectorAll<HTMLElement>('.post-row')]; const empty = document.querySelector<HTMLElement>('.empty-state');
-  function filter(tag: string) { let count = 0; buttons.forEach((b) => b.classList.toggle('active', b.dataset.tag?.toLowerCase() === tag.toLowerCase())); rows.forEach((row) => { const show = tag === 'all' || (row.dataset.tags || '').toLowerCase().split('|').includes(tag.toLowerCase()); row.hidden = !show; if (show) count++; }); if (empty) empty.hidden = count > 0; }
-  buttons.forEach((button) => button.addEventListener('click', () => { const tag = button.dataset.tag || 'all'; filter(tag); history.replaceState(null, '', tag === 'all' ? location.pathname : `?tag=${encodeURIComponent(tag)}`); }));
-  const initial = new URLSearchParams(location.search).get('tag'); if (initial) filter(initial);
+  import { initializeJournalFilters } from '../../../features/journal/filter-controller';
+  initializeJournalFilters();
 </script>

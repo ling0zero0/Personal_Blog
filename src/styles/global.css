@@ -37,6 +37,13 @@
   --scarlet: #ed1c24;
   --blue: #3887a6;
   --paper: #f5f2ea;
+  --surface-page: var(--bg);
+  --surface-panel: var(--surface);
+  --text-primary: var(--ink);
+  --text-muted: var(--muted);
+  --border-subtle: var(--line);
+  --shadow-panel: 0 24px 80px #0008;
+  --accent-text: #b52b15;
   --section-color: var(--accent);
   --pointer-x: 0;
   --pointer-y: 0;
@@ -75,6 +82,7 @@
     --accent: #ff5a38;
     --green: #44bfa0;
     --scarlet: #ff3b43;
+    --accent-text: #ff8068;
   }
 }
 
