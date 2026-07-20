@@ -21,7 +21,7 @@ jobs:
       - name: Use project npm version
         run: |
           corepack enable
-          corepack prepare npm@10.9.4 --activate
+          corepack prepare npm@11.6.2 --activate
           npm --version
       - run: npm ci
       - run: npm run build
