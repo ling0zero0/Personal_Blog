@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+﻿import { expect, test, type Page } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -97,53 +97,46 @@ test('project archive follows manifest order and generates display indices', asy
   expect(indices).toEqual(projects.map((_, index) => String(index + 1).padStart(2, '0')));
 });
 
-test('home scene renders and reacts to command', async ({ page }) => {
+test('home portal opens the past and future archives', async ({ page }) => {
   await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
-  const scene = page.locator('#data-scene');
-  await expect(scene).toHaveAttribute('data-rendered', /^(true|fallback)$/, { timeout: 15_000 });
-  if (await scene.getAttribute('data-rendered') === 'true') {
-    await expect(scene.locator('canvas')).toBeVisible();
-    await expect(scene).toHaveAttribute('data-painted', 'true');
-  }
-  await page.locator('.command-open').first().click();
-  await expect(page.locator('#command-dialog')).toBeVisible();
-  await page.locator('#command-input').fill('让场景安静一点');
-  await page.locator('.command-form').press('Enter');
-  await expect(page.locator('.command-response')).toContainText('低频呼吸');
+  const portal = page.locator('[data-home-portal]');
+  await expect(portal).toBeVisible();
+  await expect(page.locator('.door-past')).toContainText('我的成长档案');
+  await expect(page.locator('.door-future')).toContainText('下一次行动');
+
+  await page.locator('.door-past').click();
+  await expect(page.locator('#past-archive')).toBeVisible();
+  await expect(page.locator('#past-archive .timeline li')).toHaveCount(5);
+  await expect(page.locator('#past-archive')).toContainText('现实映射');
+  await page.locator('#past-archive [data-close-archive]').click();
+
+  await page.locator('.door-future').click();
+  await expect(page.locator('#future-archive')).toBeVisible();
+  await expect(page.locator('#future-archive')).toContainText('特殊行动专员');
+  await expect(page.locator('#future-archive')).toContainText('8–15K');
+  await page.locator('#future-archive [data-close-archive]').click();
+  await expectNoOverflow(page);
 });
 
-test('reduced motion keeps the home scene static', async ({ page }) => {
+test('home portal scroll opens the doors and reveals the inner motto', async ({ page }) => {
+  await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
+  const portal = page.locator('[data-home-portal]');
+  const scrollTarget = await portal.evaluate((element) => (element as HTMLElement).offsetHeight - innerHeight);
+  await page.evaluate((target) => scrollTo(0, target), scrollTarget);
+  await expect.poll(async () => Number(await page.locator('.portal-stage').evaluate((element) => getComputedStyle(element).getPropertyValue('--open')))).toBeGreaterThan(.9);
+  await expect(page.locator('.inner-copy')).toContainText('自己做一个选择');
+  await expect(page.locator('.inner-copy nav a')).toHaveCount(3);
+  await expectNoOverflow(page);
+});
+
+test('reduced motion keeps the home portal stable and operable', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
-  const scene = page.locator('#data-scene');
-  await expect(scene).toHaveAttribute('data-rendered', 'fallback');
-  await expect(scene.locator('canvas')).toHaveCount(0);
+  await expect(page.locator('.door-past')).toBeVisible();
+  await expect(page.locator('.door-future')).toBeVisible();
+  await page.locator('.door-past').click();
+  await expect(page.locator('#past-archive')).toBeVisible();
 });
-
-test('home hero exposes the signal runner without clipping core copy', async ({ page }) => {
-  await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('.runner-stage')).toBeVisible();
-  await expect(page.locator('.runner-character')).toBeVisible();
-  await expect(page.locator('.runner-label')).toContainText('数据分身');
-  await expect(page.locator('.hero-main h1')).toHaveAccessibleName('花辞树');
-  await expect(page.locator('.hero-main p')).toBeVisible();
-  await expectNoOverflow(page);
-
-  const layout = await page.evaluate(() => {
-    const hero = document.querySelector('.hero')!.getBoundingClientRect();
-    const heading = document.querySelector('.hero-main h1')!.getBoundingClientRect();
-    const copy = document.querySelector('.hero-main p')!.getBoundingClientRect();
-    return {
-      headingInside: heading.top >= hero.top && heading.bottom <= hero.bottom,
-      copyInside: copy.top >= hero.top && copy.bottom <= hero.bottom,
-      copyHeight: copy.height,
-    };
-  });
-  expect(layout.headingInside).toBe(true);
-  expect(layout.copyInside).toBe(true);
-  expect(layout.copyHeight).toBeGreaterThan(40);
-});
-
 test('AI filter and language switching work', async ({ page }) => {
   await page.goto('/zh/', { waitUntil: 'domcontentloaded' });
   await page.locator('.command-open').first().click();
@@ -208,3 +201,5 @@ test('journal detail uses the collapsible heading navigator without a duplicate 
   );
   await expect(page.locator('.toc')).toHaveCount(0);
 });
+
+

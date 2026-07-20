@@ -1,90 +1,52 @@
----
-import { ArrowDown, ArrowUpRight } from 'lucide-astro';
+﻿---
+import { ArrowUpRight } from 'lucide-astro';
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import DataScene from '../../components/DataScene.astro';
-import SignalRunner from '../../components/SignalRunner.astro';
-import ProjectRow from '../../components/ProjectRow.astro';
+import HomePortal from '../../components/HomePortal.astro';
 import ArrowLink from '../../components/ArrowLink.astro';
-import SectionNavigator from '../../components/SectionNavigator.astro';
-import { locales, profile, type Locale } from '../../data/site';
+import { locales, type Locale } from '../../data/site';
 import { projects } from '../../data/projects';
 export function getStaticPaths() { return locales.map((lang) => ({ params: { lang } })); }
 const lang = Astro.params.lang as Locale;
-const p = profile[lang];
-const posts = (await getCollection('blog', ({ data }) => data.lang === lang && !data.draft)).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 2);
+const posts = (await getCollection('blog', ({ data }) => data.lang === lang && !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()).slice(0, 2);
 const copy = lang === 'zh' ? {
-  title: '花辞树 — 创意开发者与 AI 产品设计师', work: '精选项目', allWork: '浏览全部项目', journal: '最近写作', allJournal: '阅读全部文章', read: '阅读文章',
-  scene: ['视差响应', '实时场景', 'AI 导航'], introLabel: '任务日志', runner: '数据分身 / 001', signal: '信号已锁定',
+  title: '花辞树 — 人格档案与下一次行动',
+  description: '穿过过去与未来的两扇门，阅读人格档案、职业方向与支撑选择的内在信念。',
+  archive: '项目归档', archiveTitle: '所有行动成果，统一归档。', archiveDescription: '首页只讲述人物与选择；完整案例、过程和成果留在项目归档中。', archiveCount: '已收录案例', archiveLink: '进入项目归档',
+  journal: '最近记录', journalLink: '阅读全部记录', read: '阅读记录',
 } : {
-  title: '花辞树 — Creative Developer & AI Product Designer', work: 'Selected work', allWork: 'View all projects', journal: 'Recent writing', allJournal: 'Read all writing', read: 'Read article',
-  scene: ['PARALLAX', 'LIVE SCENE', 'AI NAV'], introLabel: 'Mission log', runner: 'SIGNAL RUNNER / 001', signal: 'SIGNAL ACQUIRED',
+  title: 'Huacishu — Personal Archive & Next Mission',
+  description: 'Step through the doors of past and future to explore a personal archive, professional direction, and the convictions behind every choice.',
+  archive: 'Project archive', archiveTitle: 'Every completed mission, archived once.', archiveDescription: 'The homepage tells the person and the choice. Complete cases, process, and outcomes live in the project archive.', archiveCount: 'Cases archived', archiveLink: 'Enter project archive',
+  journal: 'Recent logs', journalLink: 'Read all logs', read: 'Read log',
 };
-const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
-const sectionItems = lang === 'zh'
-  ? [
-      { id: 'overview', label: '首页概览' },
-      { id: 'intro', label: '个人简介' },
-      { id: 'work', label: '精选项目' },
-      { id: 'journal', label: '最近写作' },
-    ]
-  : [
-      { id: 'overview', label: 'Overview' },
-      { id: 'intro', label: 'Introduction' },
-      { id: 'work', label: 'Selected work' },
-      { id: 'journal', label: 'Recent writing' },
-    ];
----
-<BaseLayout title={copy.title} description={p.statement} lang={lang}>
-  <SectionNavigator lang={lang} items={sectionItems} />
-  <section id="overview" class="hero" data-section-anchor>
-    <DataScene />
-    <div class="hero-grid" aria-hidden="true"></div>
-    <div class="hero-slice" aria-hidden="true"></div>
-    <SignalRunner />
-    <div class="hero-content container">
-      <div class="hero-top mono">
-        <span>{p.role}</span>
-        <span class="signal-state"><i></i>{copy.signal}</span>
-        <span>{p.location}</span>
-      </div>
-      <div class="hero-main" data-hero-copy>
-        <span class="runner-label mono">{copy.runner}</span>
-        <div class="name-camera">
-          <h1 class="name-cards" aria-label="花辞树">
-            <span class="name-card card-flower" aria-hidden="true"><b>花</b><i class="mono">01</i></span>
-            <span class="name-card card-word" aria-hidden="true"><b>辞</b><i class="mono">02</i></span>
-            <span class="name-card card-tree" aria-hidden="true"><b>树</b><i class="mono">03</i></span>
-          </h1>
-        </div>
-        <p>{p.statement}</p>
-      </div>
-      <a class="scroll-cue mono" href="#intro"><ArrowDown size={14} /><span>SCROLL / 01</span></a>
-      <div class="scene-keys mono">{copy.scene.map((item, i) => <span><b>0{i + 1}</b>{item}</span>)}</div>
-    </div>
-  </section>
+const dateFormat = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-GB', { year: 'numeric', month: 'short', day: 'numeric' });---
+<BaseLayout title={copy.title} description={copy.description} lang={lang} image={undefined}>
+  <HomePortal lang={lang} />
 
-  <section id="intro" class="intro section" data-section-anchor>
-    <div class="container intro-grid" data-reveal>
-      <div class="intro-meta"><span class="eyebrow">{copy.introLabel}</span><span class="intro-index mono">HCS / 31.2304° N</span></div>
-      <p class="lede">{p.intro}</p>
-    </div>
-  </section>
-
-  <section id="work" class="work-section" data-section-anchor>
+  <section id="work" class="work-gateway section" data-section-anchor>
     <div class="container">
-      <header class="section-head"><span class="eyebrow">01 / {copy.work}</span><ArrowLink href={`/${lang}/projects`} label={copy.allWork} /></header>
-      {projects.slice(0, 2).map((project, i) => <ProjectRow project={project} lang={lang} position={i} />)}
+      <header class="section-head"><span class="eyebrow">03 / {copy.archive}</span></header>
+      <a class="archive-gateway" href={`/${lang}/projects`} data-reveal>
+        <span class="archive-index mono">ARCHIVE / {projects.length.toString().padStart(2, '0')}</span>
+        <div class="archive-message"><h2>{copy.archiveTitle}</h2><p>{copy.archiveDescription}</p></div>
+        <div class="archive-action">
+          <span class="archive-count"><b>{projects.length.toString().padStart(2, '0')}</b><small class="mono">{copy.archiveCount}</small></span>
+          <span class="archive-link mono">{copy.archiveLink}<ArrowUpRight /></span>
+        </div>
+        <span class="archive-mark mono" aria-hidden="true">PROJECT<br />ARCHIVE</span>
+      </a>
     </div>
   </section>
 
   <section id="journal" class="journal-preview section" data-section-anchor>
     <div class="container">
-      <header class="section-head"><span class="eyebrow">02 / {copy.journal}</span><ArrowLink href={`/${lang}/journal`} label={copy.allJournal} /></header>
+      <header class="section-head"><span class="eyebrow">04 / {copy.journal}</span><ArrowLink href={`/${lang}/journal`} label={copy.journalLink} /></header>
       <div class="home-posts">
-        {posts.map((post, i) => <article class="home-post" data-reveal>
+        {posts.map((post, index) => <article class="home-post" data-reveal>
           <a href={`/${lang}/journal/${post.id.split('/').pop()}`}>
-            <div class="post-num mono">0{i + 1}</div>
+            <div class="post-num mono">0{index + 1}</div>
             <div><h2>{post.data.title}</h2><p>{post.data.description}</p></div>
             <div class="post-end"><span class="mono">{dateFormat.format(post.data.pubDate)}</span><ArrowUpRight /></div>
           </a>
@@ -94,177 +56,16 @@ const sectionItems = lang === 'zh'
   </section>
 </BaseLayout>
 <style>
-  .hero { --hero-cream: #f1efe6; position: relative; height: min(900px, 88svh); min-height: 680px; color: var(--hero-cream); overflow: hidden; isolation: isolate; background: #090908; }
-  .hero :global(.data-scene) { opacity: .46; filter: contrast(1.15); }
-  .hero-grid { position: absolute; z-index: 1; inset: 0; opacity: .19; background-image: linear-gradient(#ffffff20 1px, transparent 1px), linear-gradient(90deg, #ffffff20 1px, transparent 1px); background-size: 64px 64px; mask-image: linear-gradient(90deg, #000, transparent 48%); pointer-events: none; }
-  .hero-slice { position: absolute; z-index: 2; left: -5%; top: 42%; width: 47%; height: 16px; background: #ff4f2b; transform: rotate(-3deg); transform-origin: left; box-shadow: 0 5px 0 #0b0b0a; pointer-events: none; }
-  .hero-content { position: relative; z-index: 4; height: 100%; padding-top: calc(var(--header-h) + 35px); padding-bottom: 28px; display: grid; grid-template-rows: auto 1fr auto; pointer-events: none; }
-  .hero-content a { pointer-events: auto; }
-  .hero-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; color: #ffffff9c; }
-  .hero-top > span:last-child { justify-self: end; }
-  .signal-state { display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid #ffffff52; background: #090908b8; color: #fff; }
-  .signal-state i { width: 6px; height: 6px; background: #37c6a2; box-shadow: 0 0 9px #37c6a2; }
-  .hero-main { position: relative; z-index: 5; align-self: center; width: min(42vw, 600px); padding-top: 4vh; }
-  .runner-label { display: inline-block; margin-bottom: 17px; padding: 7px 9px; background: var(--hero-cream); color: #0b0b0a; }
-  .name-camera { width: min(50vw, 710px); padding: 16px 20px 30px 6px; perspective: 1100px; pointer-events: none; }
-  .name-cards { position: relative; display: flex; align-items: center; gap: clamp(8px, 1.15vw, 18px); width: max-content; margin: 0; transform-style: preserve-3d; will-change: transform; }
-  .name-card { position: relative; display: grid; place-items: center; width: clamp(112px, 11vw, 168px); aspect-ratio: .82; border: 3px solid #0b0b0a; box-shadow: 9px 11px 0 #0b0b0a; transform-style: preserve-3d; transform-origin: center; will-change: transform, filter, opacity; }
-  .name-card::before { content: ''; position: absolute; z-index: -1; inset: 9px -11px -11px 9px; border: 2px solid currentColor; background: var(--card-back); transform: translateZ(-24px); }
-  .name-card b { font-size: clamp(84px, 9.4vw, 144px); line-height: 1; font-weight: 700; }
-  .name-card i { position: absolute; right: 8px; bottom: 7px; font-size: 10px; font-style: normal; opacity: .68; }
-  .card-flower { --card-back: #ff4f2b; color: #0b0b0a; background: #f1efe6; clip-path: polygon(13% 0, 100% 0, 100% 100%, 0 100%, 0 13%); transform: rotate(-1.5deg); }
-  .card-word { --card-back: #f1efe6; z-index: 2; color: #0b0b0a; background: #ff4f2b; clip-path: polygon(0 0, 91% 0, 100% 10%, 100% 100%, 0 100%); transform: translateY(9px) rotate(.8deg); }
-  .card-tree { --card-back: #37c6a2; color: #f1efe6; background: #0b0b0a; clip-path: polygon(0 0, 100% 0, 100% 87%, 87% 100%, 0 100%); transform: translateY(2px) rotate(1.4deg); }
-  .name-cards.is-live .name-card { animation: card-breathe 6.4s ease-in-out infinite alternate; }
-  .name-cards.is-live .card-word { animation-delay: -2.1s; }
-  .name-cards.is-live .card-tree { animation-delay: -4.2s; }
-  @keyframes card-breathe { to { translate: 0 -3px; filter: drop-shadow(0 7px 10px #0004); } }
-  .hero-main p { margin: clamp(54px, 8vh, 84px) 0 0; max-width: 480px; padding-left: 18px; border-left: 4px solid #ff4f2b; font-size: clamp(17px, 1.55vw, 24px); line-height: 1.45; text-wrap: balance; }
-  .scroll-cue { display: flex; align-items: center; gap: 10px; width: max-content; color: #ffffff91; }
-  .scene-keys { position: absolute; right: var(--pad); bottom: 28px; display: flex; gap: 22px; color: #ffffff70; }
-  .scene-keys span { display: flex; gap: 6px; } .scene-keys b { color: #fff; font-weight: 400; }
-  .intro { position: relative; min-height: 66vh; display: grid; align-items: center; overflow: hidden; padding-bottom: clamp(190px, 21vw, 330px); }
-  .intro::after { content: 'LOG / 01'; position: absolute; z-index: 0; right: var(--pad); bottom: clamp(34px, 5vw, 76px); color: var(--line); font: 600 clamp(64px, 10.5vw, 164px)/1 'DM Mono', monospace; white-space: nowrap; opacity: .58; pointer-events: none; }
-  .intro-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(180px, .75fr) 2fr; gap: clamp(40px, 8vw, 140px); align-items: start; }
-  .intro-meta { display: grid; gap: 44px; }
-  .intro-grid .lede { margin: 0; }
-  .intro-index { color: var(--muted); }
   .section-head { min-height: 150px; padding-block: 48px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
-  .journal-preview { padding-bottom: 50px; }
-  .home-post { border-top: 1px solid var(--line); }
-  .home-post a { display: grid; grid-template-columns: 70px 1fr auto; gap: 34px; align-items: start; padding-block: 42px; }
-  .post-num { padding-top: 10px; color: var(--muted); }
-  .home-post h2 { margin: 0; font-size: clamp(27px, 3.2vw, 48px); line-height: var(--title-line-height); letter-spacing: var(--title-letter-spacing); font-weight: 500; overflow-wrap: break-word; }
-  .home-post p { margin: 18px 0 0; max-width: 640px; color: var(--muted); line-height: 1.6; }
-  .post-end { display: flex; align-items: center; gap: 26px; color: var(--muted); }
-  .post-end svg { color: var(--ink); }
-  @media (max-width: 760px) {
-    .hero { height: 88svh; min-height: 660px; max-height: 820px; }
-    .hero :global(.data-scene) { opacity: .28; }
-    .hero-grid { background-size: 38px 38px; opacity: .15; mask-image: none; }
-    .hero-slice { top: 30%; width: 55%; height: 10px; }
-    .hero-content { padding-top: calc(var(--header-h) + 22px); padding-bottom: 20px; }
-    .hero-top { grid-template-columns: 1fr auto; font-size: 10px; }
-    .hero-top .signal-state { justify-self: end; padding: 6px 7px; }
-    .hero-top > span:last-child, .scene-keys, .hero :global(.scene-status) { display: none; }
-    .hero-main { align-self: start; width: 100%; padding-top: 9vh; }
-    .runner-label { margin-bottom: 12px; font-size: 10px; }
-    .name-camera { width: 100%; padding: 8px 14px 24px 0; perspective: 700px; }
-    .name-cards { gap: 6px; }
-    .name-card { width: clamp(86px, 25vw, 106px); border-width: 2px; box-shadow: 5px 7px 0 #0b0b0a; }
-    .name-card::before { inset: 5px -6px -7px 5px; border-width: 1px; }
-    .name-card b { font-size: clamp(64px, 19vw, 82px); }
-    .hero-main p { position: absolute; top: min(55vh, 490px); left: 0; width: min(86vw, 360px); margin: 0; padding: 11px 12px 11px 14px; border-left-width: 3px; background: #090908e6; font-size: 16px; line-height: 1.45; }
-    .scroll-cue { align-self: end; }
-    .intro-grid { grid-template-columns: 1fr; gap: 34px; }
-    .intro-meta { grid-template-columns: 1fr auto; align-items: center; gap: 20px; }
-    .intro { padding-bottom: 80px; }
-    .intro::after { display: none; }
-    .section-head { min-height: 120px; }
-    .section-head :global(.rule-link) { font-size: 0; gap: 0; border: 0; padding: 12px; }
-    .home-post a { grid-template-columns: 36px 1fr; gap: 12px; }
-    .post-end { grid-column: 2; justify-content: space-between; }
-  }
+  .work-gateway { overflow: hidden; padding-bottom: clamp(110px, 13vw, 190px); }
+  .archive-gateway { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(48px, 9vw, 150px); min-height: clamp(430px, 48vw, 650px); padding: clamp(30px, 5vw, 76px); overflow: hidden; border: 1px solid var(--line); background: var(--ink); color: var(--bg); isolation: isolate; }
+  .archive-gateway::before { content: ''; position: absolute; z-index: -1; inset: auto -8% -30% 34%; height: 70%; background: var(--section-color); clip-path: polygon(12% 0, 100% 15%, 88% 100%, 0 82%); transition: transform .7s var(--ease); }
+  .archive-gateway:hover::before, .archive-gateway:focus-visible::before { transform: translate(-2%, -5%) rotate(-2deg); }
+  .archive-index { grid-column: 1 / -1; align-self: start; color: color-mix(in srgb, var(--bg) 58%, transparent); }
+  .archive-message { align-self: end; max-width: 790px; }.archive-message h2 { max-width: 12ch; margin: 0; font-size: var(--type-section-title); line-height: var(--title-line-height); letter-spacing: var(--title-letter-spacing); text-wrap: balance; }.archive-message p { max-width: 590px; margin: 28px 0 0; color: color-mix(in srgb, var(--bg) 68%, transparent); font-size: clamp(16px, 1.5vw, 21px); line-height: 1.6; }
+  .archive-action { z-index: 1; align-self: end; display: grid; gap: clamp(56px, 9vw, 120px); min-width: clamp(190px, 20vw, 290px); }.archive-count { display: grid; gap: 8px; }.archive-count b { font: 500 clamp(72px, 9vw, 138px)/.8 'DM Mono', monospace; }.archive-count small { color: color-mix(in srgb, var(--bg) 70%, transparent); }.archive-link { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-top: 16px; border-top: 1px solid currentColor; }.archive-link svg { width: 30px; height: 30px; transition: transform .3s var(--ease); }.archive-gateway:hover .archive-link svg { transform: translate(5px, -5px); }
+  .archive-mark { position: absolute; z-index: -1; right: -1vw; top: 4%; color: transparent; font-size: clamp(70px, 12vw, 180px); font-weight: 500; line-height: .78; text-align: right; -webkit-text-stroke: 1px color-mix(in srgb, var(--bg) 13%, transparent); pointer-events: none; }
+  .journal-preview { padding-bottom: 50px; }.home-post { border-top: 1px solid var(--line); }.home-post a { display: grid; grid-template-columns: 70px 1fr auto; gap: 34px; align-items: start; padding-block: 42px; }.post-num { padding-top: 10px; color: var(--muted); }.home-post h2 { margin: 0; font-size: clamp(27px, 3.2vw, 48px); line-height: var(--title-line-height); letter-spacing: var(--title-letter-spacing); font-weight: 500; }.home-post p { margin: 18px 0 0; max-width: 640px; color: var(--muted); line-height: 1.6; }.post-end { display: flex; align-items: center; gap: 26px; color: var(--muted); }.post-end svg { color: var(--ink); }
+  @media(max-width:760px) { .section-head { min-height:120px; }.work-gateway { padding-bottom:90px; }.archive-gateway { grid-template-columns:1fr; gap:46px; min-height:580px; padding:28px 24px; }.archive-index { grid-column:1; }.archive-action { gap:38px; min-width:0; }.archive-count b { font-size:76px; }.archive-mark { top:12%; right:-12px; font-size:24vw; }.section-head :global(.rule-link) { font-size:0; gap:0; border:0; padding:12px; }.home-post a { grid-template-columns:36px 1fr; gap:12px; }.post-end { grid-column:2; justify-content:space-between; } }
 </style>
-<script>
-  import gsap from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
-  gsap.registerPlugin(ScrollTrigger);
-  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const hero = document.querySelector<HTMLElement>('.hero');
-  if (!reduceMotion) {
-    const name = document.querySelector<HTMLElement>('.name-cards');
-    name?.classList.add('is-live');
-    const heroTimeline = gsap.timeline({
-      defaults: { ease: 'power4.out' },
-    });
-    heroTimeline
-      .from('.runner-stage', { xPercent: 12, duration: 1.05 }, .1)
-      .from('.runner-label', { x: -18, duration: .65 }, .28);
-    ScrollTrigger.create({
-      trigger: '.hero',
-      start: 'top 65%',
-      end: 'bottom top',
-      onEnterBack: () => heroTimeline.restart(),
-    });
-    if (hero && matchMedia('(pointer: fine)').matches) {
-      hero.addEventListener('pointermove', (event) => {
-        const bounds = hero.getBoundingClientRect();
-        const x = (event.clientX - bounds.left) / bounds.width - .5;
-        const y = (event.clientY - bounds.top) / bounds.height - .5;
-        hero.style.setProperty('--mx', String(x));
-        hero.style.setProperty('--my', String(y));
-        gsap.to(name, { rotateY: x * 3.2, rotateX: y * -2.4, x: x * 5, y: y * 3, duration: .65, ease: 'power3.out', overwrite: 'auto' });
-      }, { passive: true });
-      hero.addEventListener('pointerleave', () => {
-        hero.style.setProperty('--mx', '0');
-        hero.style.setProperty('--my', '0');
-        gsap.to(name, { rotateY: 0, rotateX: 0, x: 0, y: 0, duration: .7, ease: 'power3.out', overwrite: 'auto' });
-      });
-    }
-  }
 
-  const reticleAnchor = document.querySelector<HTMLElement>('.runner-reticle-anchor');
-  const runnerStage = document.querySelector<HTMLElement>('.runner-stage');
-  if (hero && reticleAnchor && runnerStage) {
-    let lockedPosition: { x: number; y: number } | null = null;
-
-    const clampToHero = (x: number, y: number) => {
-      const bounds = hero.getBoundingClientRect();
-      const margin = reticleAnchor.offsetWidth / 2 + 16;
-      return {
-        x: Math.min(Math.max(x, margin), Math.max(margin, bounds.width - margin)),
-        y: Math.min(Math.max(y, margin), Math.max(margin, bounds.height - margin)),
-      };
-    };
-
-    const moveReticle = (heroX: number, heroY: number, duration: number) => {
-      const target = clampToHero(heroX, heroY);
-      const restingCenterX = reticleAnchor.offsetLeft + reticleAnchor.offsetWidth / 2;
-      const restingCenterY = reticleAnchor.offsetTop + reticleAnchor.offsetHeight / 2;
-      gsap.to(reticleAnchor, {
-        x: target.x - runnerStage.offsetLeft - restingCenterX,
-        y: target.y - runnerStage.offsetTop - restingCenterY,
-        duration: reduceMotion ? 0 : duration,
-        ease: 'power3.out',
-        overwrite: true,
-      });
-    };
-
-    if (!reduceMotion && matchMedia('(pointer: fine)').matches) {
-      hero.addEventListener('pointermove', (event) => {
-        if (lockedPosition) return;
-        const bounds = hero.getBoundingClientRect();
-        const restingBounds = reticleAnchor.getBoundingClientRect();
-        const currentX = Number(gsap.getProperty(reticleAnchor, 'x')) || 0;
-        const currentY = Number(gsap.getProperty(reticleAnchor, 'y')) || 0;
-        const restingX = restingBounds.left - bounds.left + restingBounds.width / 2 - currentX;
-        const restingY = restingBounds.top - bounds.top + restingBounds.height / 2 - currentY;
-        moveReticle(
-          restingX + (event.clientX - bounds.left - bounds.width / 2) * .02,
-          restingY + (event.clientY - bounds.top - bounds.height / 2) * .02,
-          .35,
-        );
-      }, { passive: true });
-      hero.addEventListener('pointerleave', () => {
-        if (!lockedPosition) gsap.to(reticleAnchor, { x: 0, y: 0, duration: .45, ease: 'power3.out', overwrite: true });
-      });
-    }
-
-    hero.addEventListener('pointerup', (event) => {
-      const bounds = hero.getBoundingClientRect();
-      const target = clampToHero(event.clientX - bounds.left, event.clientY - bounds.top);
-      lockedPosition = { x: target.x / bounds.width, y: target.y / bounds.height };
-      moveReticle(target.x, target.y, .7);
-    });
-
-    addEventListener('resize', () => {
-      if (!lockedPosition) {
-        gsap.set(reticleAnchor, { x: 0, y: 0 });
-        return;
-      }
-      const bounds = hero.getBoundingClientRect();
-      moveReticle(lockedPosition.x * bounds.width, lockedPosition.y * bounds.height, 0);
-    }, { passive: true });
-  }
-</script>

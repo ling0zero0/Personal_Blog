@@ -1,0 +1,182 @@
+﻿---
+import { ArrowDown, ArrowUpRight, BriefcaseBusiness, Clock3, Mail, MapPin, Plane, X } from 'lucide-astro';
+import type { Locale } from '../data/site';
+import pastDesktop from '../assets/images/home/past-door.webp';
+import futureDesktop from '../assets/images/home/future-door.webp';
+import innerDesktop from '../assets/images/home/inner-world.webp';
+import pastMobile from '../assets/images/home/past-door-mobile.webp';
+import futureMobile from '../assets/images/home/future-door-mobile.webp';
+import innerMobile from '../assets/images/home/inner-world-mobile.webp';
+
+const { lang } = Astro.props as { lang: Locale };
+const zh = lang === 'zh';
+const timeline = zh ? [
+  { period: '1991—2009 / 0—18岁', title: '局外人', story: '父母常年在外，寄居亲戚家，在贵族中学成绩垫底。心里装着班里最安静的那个女生，却从不敢开口；天生的疏离感使他无法融入任何圈子。', meaning: '长期处于群体边缘，让我学会独立观察环境，也更早注意到那些没有被说出口的情绪。', tags: ['独立观察', '情绪感知', '环境适应'] },
+  { period: '2009 / 18岁', title: '离开熟悉的世界', story: '因特殊血统被海外神秘学院特招。在心上人被同学横刀夺爱的同一天，跟着一位穿深红色裙子的学姐登上飞往陌生国度的航班。', meaning: '变化不会等人准备好。面对突如其来的机会，我第一次离开熟悉的环境，在未知中重新建立自己的位置。', tags: ['快速适应', '跨环境协作', '接受未知'] },
+  { period: '2009—2011 / 18—20岁', title: '力量的代价', story: '与体内自称“弟弟”的神秘存在签订契约。每动用一次力量就折损四分之一寿命，先后猎杀多位古王，代价是越来越不像“人”。', meaning: '能力从来不是免费的。解决高风险问题时，必须理解力量的边界、判断代价，并为决定承担后果。', tags: ['风险判断', '极端执行', '代价意识'] },
+  { period: '2011—2012 / 20—21岁', title: '为被遗忘的人出发', story: '被推举为学生领袖。为找回一位被全世界遗忘的师兄，独自走向北欧神话中的神明，用残存的生命换取那一战的可能性。', meaning: '领导不是站在所有人前面发号施令，而是在其他人已经放弃时，仍愿意为一个可能性承担责任。', tags: ['责任承担', '团队领导', '危机决策'] },
+  { period: '2012及以后', title: '主动走向真相', story: '在失去生命中最重要的女孩之后，终于不再逃避，主动奔赴极北之地的遗址寻找出身真相，完成从被动到主动的最后一跃。', meaning: '成长不是终于拥有所有答案，而是不再等待别人告诉自己该去哪里，开始主动接近问题和真相。', tags: ['主动选择', '长期行动', '自我驱动'] },
+] : [
+  { period: '1991—2009 / AGE 0—18', title: 'The Outsider', story: 'With his parents always away, he lived with relatives, ranked last at an elite school, and never spoke to the quiet girl he cared about. A natural distance kept him outside every circle.', meaning: 'Life at the edge taught me to observe independently and notice what people leave unsaid.', tags: ['Observation', 'Empathy', 'Adaptation'] },
+  { period: '2009 / AGE 18', title: 'Leaving the Known World', story: 'Recruited by a mysterious overseas academy for an unusual bloodline, he boarded a flight into the unknown with a senior in a crimson dress.', meaning: 'Change rarely waits for readiness. I learned to leave familiar ground and rebuild my place inside uncertainty.', tags: ['Adaptation', 'Collaboration', 'Uncertainty'] },
+  { period: '2009—2011 / AGE 18—20', title: 'The Cost of Power', story: 'He made a pact with an entity calling itself his younger brother. Each use of its power cost a quarter of his life; every victory made him a little less human.', meaning: 'Capability is never free. High-risk work requires boundaries, trade-offs, and ownership of consequences.', tags: ['Risk judgment', 'Execution', 'Trade-offs'] },
+  { period: '2011—2012 / AGE 20—21', title: 'For the Forgotten', story: 'Chosen as a student leader, he walked alone toward a god of northern myth to recover a senior the entire world had forgotten.', meaning: 'Leadership begins when everyone else has stopped believing and someone still accepts responsibility for a possibility.', tags: ['Ownership', 'Leadership', 'Crisis decisions'] },
+  { period: '2012 AND AFTER', title: 'Walking Toward the Truth', story: 'After losing the most important girl in his life, he stopped running and headed north to uncover the truth of his origin.', meaning: 'Growth is not having every answer. It is choosing to move toward the question without waiting for permission.', tags: ['Agency', 'Long-term action', 'Self-direction'] },
+];
+const copy = zh ? {
+  past: '过去', pastKicker: 'PERSONAL ARCHIVE / 01', pastTitle: '我的成长档案', pastHint: '点击进入人格档案',
+  future: '未来', futureKicker: 'NEXT MISSION / 02', futureTitle: '下一次行动', futureHint: '点击查看职业方向',
+  scroll: '向下推开这扇门', close: '返回双门入口', story: '档案记录', meaning: '现实映射',
+  pastLead: '从一个无法融入人群的少年，到主动走向世界尽头的人。',
+  futureLead: '我正在寻找的不是一个安全的位置，而是一件值得亲自抵达现场的事。',
+  role: '特殊行动专员', roleSub: '卡塞尔学院执行部外勤编制', location: '卡塞尔 / 全球外勤', work: '全职', pay: '税前 8–15K / 月 + 任务津贴', payNote: '以任务结算，具体根据行动等级与风险系数面议。这份工作不是冲着钱去的。', available: '随时', availableNote: '但有些旧账要先清一清。', travel: '接受全球外勤', travelNote: '经常一出差，就是直接飞往战场。', email: 'lumingfei@cassel.edu', emailNote: '学院的，但不常看。', dossier: '档案尚未寻回', dossierNote: '我的过去写在别人的档案里，等我自己翻到了再补。',
+  innerKicker: 'THE CHOICE IS MINE', quote: ['我这一生，', '不过是学会在没得选的时候，', '自己做一个选择。'], reflection: '从前总觉得自己是被推着走的——被父母丢下，被学院选中，被命运按着头跪下去。后来才发现，每一次“没得选”的尽头，其实都留着一道缝。', push: '我不再等别人把门打开。我自己推。', projects: '进入项目归档', writing: '阅读行动记录', about: '查看现实档案',
+} : {
+  past: 'Past', pastKicker: 'PERSONAL ARCHIVE / 01', pastTitle: 'My Growth Archive', pastHint: 'Open the personal archive',
+  future: 'Future', futureKicker: 'NEXT MISSION / 02', futureTitle: 'The Next Mission', futureHint: 'View professional direction',
+  scroll: 'Scroll to open the doors', close: 'Return to the two doors', story: 'Archive record', meaning: 'Real-world meaning',
+  pastLead: 'From a boy who belonged nowhere to someone willing to walk toward the end of the world.',
+  futureLead: 'I am not looking for a safe position, but for work worth reaching in person.',
+  role: 'Special Operations Officer', roleSub: 'Cassell College Executive Department — Field Unit', location: 'Cassell / Global deployment', work: 'Full time', pay: '8–15K / month + mission allowance', payNote: 'Settled by mission level and risk coefficient. This was never only about the money.', available: 'Immediately', availableNote: 'There are only a few old debts to settle first.', travel: 'Global field deployment', travelNote: 'A business trip often means flying directly into a battlefield.', email: 'lumingfei@cassel.edu', emailNote: 'Academy-issued. Rarely checked.', dossier: 'Dossier not recovered', dossierNote: 'My past is written in other people’s files. I will add it when I find it myself.',
+  innerKicker: 'THE CHOICE IS MINE', quote: ['My whole life has been', 'learning that when there is no choice,', 'I can still make one.'], reflection: 'I used to believe I was only being pushed—left behind by my parents, selected by the academy, forced to kneel by fate. Later I found that every dead end leaves a narrow opening.', push: 'I no longer wait for someone else to open the door. I push it myself.', projects: 'Enter project archive', writing: 'Read mission logs', about: 'View real-world profile',
+};---
+<section id="portal" class="portal-scroll" data-home-portal data-section-anchor>
+  <div class="portal-stage">
+    <div class="inner-world" aria-hidden="true">
+      <picture><source media="(max-width: 760px)" srcset={innerMobile.src} /><img src={innerDesktop.src} alt="" width={innerDesktop.width} height={innerDesktop.height} /></picture>
+      <div class="inner-shade"></div>
+    </div>
+    <div class="inner-copy">
+      <span class="mono">{copy.innerKicker}</span>
+      <blockquote>{copy.quote.map((line) => <span>{line}</span>)}</blockquote>
+      <p>{copy.reflection}</p>
+      <strong>{copy.push}</strong>
+      <nav aria-label={zh ? '继续浏览' : 'Continue browsing'}>
+        <a href={`/${lang}/projects`}>{copy.projects}<ArrowUpRight /></a>
+        <a href={`/${lang}/journal`}>{copy.writing}<ArrowUpRight /></a>
+        <a href={`/${lang}/about`}>{copy.about}<ArrowUpRight /></a>
+      </nav>
+    </div>
+
+    <button class="door door-past" type="button" data-open-archive="past" aria-controls="past-archive">
+      <picture><source media="(max-width: 760px)" srcset={pastMobile.src} /><img src={pastDesktop.src} alt="" width={pastDesktop.width} height={pastDesktop.height} /></picture>
+      <span class="door-shade"></span><span class="door-number mono">01</span>
+      <span class="door-copy"><small class="mono">{copy.pastKicker}</small><b>{copy.pastTitle}</b><em>{copy.pastHint}<ArrowUpRight /></em></span>
+    </button>
+    <button class="door door-future" type="button" data-open-archive="future" aria-controls="future-archive">
+      <picture><source media="(max-width: 760px)" srcset={futureMobile.src} /><img src={futureDesktop.src} alt="" width={futureDesktop.width} height={futureDesktop.height} /></picture>
+      <span class="door-shade"></span><span class="door-number mono">02</span>
+      <span class="door-copy"><small class="mono">{copy.futureKicker}</small><b>{copy.futureTitle}</b><em>{copy.futureHint}<ArrowUpRight /></em></span>
+    </button>
+    <div class="portal-center" aria-hidden="true"><span>{copy.past}</span><i></i><span>{copy.future}</span></div>
+    <div class="portal-scroll-cue mono"><ArrowDown /><span>{copy.scroll}</span></div>
+  </div>
+</section>
+
+<dialog id="past-archive" class="archive-dialog archive-past" data-archive="past">
+  <div class="archive-backdrop"><img src={pastDesktop.src} alt="" /></div>
+  <button class="archive-close mono" type="button" data-close-archive><X />{copy.close}</button>
+  <div class="archive-layout">
+    <header><span class="mono">{copy.pastKicker}</span><h2>{copy.pastTitle}</h2><p>{copy.pastLead}</p></header>
+    <ol class="timeline">
+      {timeline.map((item, index) => <li>
+        <span class="timeline-index mono">{String(index + 1).padStart(2, '0')}</span>
+        <div class="timeline-entry"><small class="mono">{item.period}</small><h3>{item.title}</h3><p>{item.story}</p>
+          <details><summary>{copy.meaning}</summary><p>{item.meaning}</p><div class="timeline-tags">{item.tags.map((tag) => <span class="mono">{tag}</span>)}</div></details>
+        </div>
+      </li>)}
+    </ol>
+  </div>
+</dialog>
+
+<dialog id="future-archive" class="archive-dialog archive-future" data-archive="future">
+  <div class="archive-backdrop"><img src={futureDesktop.src} alt="" /></div>
+  <button class="archive-close mono" type="button" data-close-archive><X />{copy.close}</button>
+  <div class="archive-layout future-layout">
+    <header><span class="mono">{copy.futureKicker}</span><h2>{copy.futureTitle}</h2><p>{copy.futureLead}</p></header>
+    <div class="mission-grid">
+      <article><BriefcaseBusiness /><small class="mono">ROLE / ASSIGNMENT</small><h3>{copy.role}</h3><p>{copy.roleSub}</p></article>
+      <article><MapPin /><small class="mono">BASE / LOCATION</small><h3>{copy.location}</h3><p>{zh ? '驻地服从任务调配' : 'Deployment assigned by mission'}</p></article>
+      <article><Clock3 /><small class="mono">STATUS / AVAILABILITY</small><h3>{copy.work} ? {copy.available}</h3><p>{copy.availableNote}</p></article>
+      <article><span class="mission-symbol">?</span><small class="mono">COMPENSATION</small><h3>{copy.pay}</h3><p>{copy.payNote}</p></article>
+      <article><Plane /><small class="mono">FIELD WORK</small><h3>{copy.travel}</h3><p>{copy.travelNote}</p></article>
+      <article><Mail /><small class="mono">CONTACT</small><h3><a href={`mailto:${copy.email}`}>{copy.email}</a></h3><p>{copy.emailNote}</p></article>
+      <article class="dossier-card"><span class="mission-symbol">?</span><small class="mono">DOSSIER / CV</small><h3>{copy.dossier}</h3><p>{copy.dossierNote}</p></article>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .portal-scroll { position: relative; height: 220svh; background: #08090a; }
+  .portal-stage { --open: 0; position: sticky; top: 0; height: 100svh; min-height: 620px; overflow: hidden; background: #08090a; color: #fff; perspective: 1600px; }
+  .inner-world, .inner-world picture, .inner-world img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .inner-world img { object-fit: cover; }
+  .inner-shade { position: absolute; inset: 0; background: linear-gradient(90deg, #06080bc9, #06080b20 48%, #06080b8c), linear-gradient(0deg, #050608e8 0%, transparent 48%); }
+  .inner-copy { position: absolute; z-index: 2; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: calc(var(--header-h) + 36px) var(--pad) 42px; text-align: center; opacity: clamp(0, calc((var(--open) - .38) * 2.5), 1); transform: translateY(calc((1 - var(--open)) * 38px)); pointer-events: none; }
+  .inner-copy > .mono { color: #ffc773; }
+  .inner-copy blockquote { margin: clamp(26px, 5vh, 58px) 0 0; font-size: clamp(34px, 5.2vw, 82px); font-weight: 600; line-height: 1.08; letter-spacing: -.035em; text-shadow: 0 4px 30px #000b; }
+  .inner-copy blockquote span { display: block; }
+  .inner-copy p { max-width: 720px; margin: 30px 0 0; color: #ffffffe0; font-size: clamp(15px, 1.25vw, 19px); line-height: 1.8; }
+  .inner-copy strong { margin-top: 18px; color: #ffd28a; font-size: clamp(18px, 1.5vw, 24px); }
+  .inner-copy nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: clamp(30px, 5vh, 58px); pointer-events: auto; }
+  .inner-copy nav a { display: inline-flex; align-items: center; gap: 22px; padding: 13px 16px; border: 1px solid #ffffff70; background: #08090a8c; font: 11px 'DM Mono', monospace; text-transform: uppercase; backdrop-filter: blur(12px); }
+  .inner-copy nav svg { width: 17px; transition: transform .25s; }.inner-copy nav a:hover svg { transform: translate(3px,-3px); }
+  .door { position: absolute; z-index: 5; top: 0; bottom: 0; width: 50.1%; padding: 0; overflow: hidden; border: 0; color: #fff; text-align: left; cursor: pointer; transform-style: preserve-3d; will-change: transform; }
+  .door picture, .door img { position: absolute; top: 0; height: 100%; max-width: none; }
+  .door img { width: 100vw; object-fit: cover; transition: filter .55s var(--ease), scale .7s var(--ease); }
+  .door-past { left: 0; transform-origin: left center; transform: translateX(calc(var(--open) * -102%)) rotateY(calc(var(--open) * 9deg)); }
+  .door-future { right: 0; transform-origin: right center; transform: translateX(calc(var(--open) * 102%)) rotateY(calc(var(--open) * -9deg)); }
+  .door-past picture, .door-past img { left: 0; }.door-future picture, .door-future img { right: 0; }
+  .door-shade { position: absolute; inset: 0; background: linear-gradient(0deg, #050607e8 0%, transparent 58%), linear-gradient(90deg, #0506074d, transparent 55%); transition: background .5s; }
+  .door-future .door-shade { background: linear-gradient(0deg, #050607e8 0%, transparent 58%), linear-gradient(270deg, #0506074d, transparent 55%); }
+  .door:hover img, .door:focus-visible img { scale: 1.025; filter: saturate(1.08) brightness(1.04); }
+  .door-number { position: absolute; top: calc(var(--header-h) + 30px); font-size: 12px; opacity: .8; }.door-past .door-number { left: var(--pad); }.door-future .door-number { right: var(--pad); }
+  .door-copy { position: absolute; right: clamp(28px, 5vw, 76px); bottom: clamp(54px, 9vh, 110px); left: clamp(28px, 5vw, 76px); display: grid; gap: 14px; text-shadow: 0 3px 22px #000; }
+  .door-future .door-copy { text-align: right; justify-items: end; }
+  .door-copy small { color: #ffffffbd; }.door-copy b { max-width: 8ch; font-size: clamp(38px, 5.8vw, 92px); line-height: .95; letter-spacing: -.04em; }.door-copy em { display: flex; align-items: center; gap: 12px; font-style: normal; font-size: 13px; }.door-copy svg { width: 18px; }
+  .portal-center { position: absolute; z-index: 7; top: 50%; left: 50%; display: grid; grid-template-columns: 1fr 1px 1fr; gap: 12px; align-items: center; transform: translate(-50%, -50%); font: 10px 'DM Mono', monospace; text-transform: uppercase; pointer-events: none; opacity: calc(1 - var(--open)); }.portal-center i { width: 1px; height: 70px; background: #fff9; }.portal-center span:first-child { text-align: right; }
+  .portal-scroll-cue { position: absolute; z-index: 8; left: 50%; bottom: 24px; display: flex; align-items: center; gap: 9px; transform: translateX(-50%); color: #ffffffb5; opacity: calc(1 - var(--open)); pointer-events: none; }.portal-scroll-cue svg { width: 15px; animation: door-cue 1.8s ease-in-out infinite; } @keyframes door-cue { 50% { transform: translateY(5px); } }
+  .archive-dialog { width: 100vw; max-width: none; height: 100svh; max-height: none; margin: 0; padding: 0; overflow-y: auto; border: 0; background: #0b0c0d; color: #f5f2ea; }.archive-dialog::backdrop { background: #000; }
+  .archive-backdrop { position: fixed; inset: 0; opacity: .2; pointer-events: none; }.archive-backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg,#08090af5 12%,#08090ac8 55%,#08090af2); }.archive-backdrop img { width: 100%; height: 100%; object-fit: cover; }
+  .archive-close { position: fixed; z-index: 4; top: calc(var(--header-h) + 14px); right: var(--pad); display: flex; align-items: center; gap: 9px; padding: 11px 14px; border: 1px solid #ffffff5c; background: #090a0bd9; color: #fff; cursor: pointer; backdrop-filter: blur(10px); }.archive-close svg { width: 17px; }
+  .archive-layout { position: relative; z-index: 2; width: min(100%, 1460px); margin: 0 auto; padding: calc(var(--header-h) + 100px) var(--pad) 100px; }
+  .archive-layout > header { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(260px,.6fr); gap: 28px 80px; align-items: end; margin-bottom: clamp(70px, 10vw, 150px); }.archive-layout > header span { grid-column: 1/-1; color: #e4aa6c; }.archive-layout > header h2 { margin: 0; font-size: var(--type-page-title); line-height: .9; letter-spacing: -.045em; }.archive-layout > header p { margin: 0; color: #ffffffb8; font-size: clamp(17px,1.5vw,23px); line-height: 1.6; }
+  .timeline { margin: 0; padding: 0; list-style: none; }.timeline li { display: grid; grid-template-columns: 64px minmax(0,1fr); gap: 26px; padding: clamp(38px,6vw,80px) 0; border-top: 1px solid #ffffff38; }.timeline-index { color: #e4aa6c; }.timeline-entry small { color: #ffffff8f; }.timeline-entry h3 { margin: 16px 0 24px; font-size: clamp(30px,4vw,60px); line-height: 1; }.timeline-entry > p { max-width: 860px; color: #ffffffe3; font-size: clamp(16px,1.35vw,20px); line-height: 1.75; }.timeline details { max-width: 860px; margin-top: 28px; padding: 18px 20px; border-left: 3px solid #e4aa6c; background: #ffffff0a; }.timeline summary { cursor: pointer; font: 11px 'DM Mono', monospace; text-transform: uppercase; color: #e4aa6c; }.timeline details p { line-height: 1.7; color: #ffffffc7; }.timeline-tags { display: flex; flex-wrap: wrap; gap: 8px; }.timeline-tags span { padding: 7px 9px; border: 1px solid #ffffff38; color: #ffffffa8; }
+  .future-layout > header span { color: #75bcdc; }.mission-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1px; background: #ffffff35; border: 1px solid #ffffff35; }.mission-grid article { min-height: 280px; padding: clamp(28px,4vw,56px); background: #0b0d10e8; }.mission-grid svg,.mission-symbol { display: block; width: 34px; height: 34px; margin-bottom: 44px; color: #75bcdc; font: 30px/1 'DM Mono',monospace; }.mission-grid small { color: #ffffff7d; }.mission-grid h3 { margin: 18px 0; font-size: clamp(25px,2.5vw,42px); line-height: 1.12; overflow-wrap: anywhere; }.mission-grid p { max-width: 550px; margin: 0; color: #ffffffa8; line-height: 1.65; }.dossier-card { grid-column: 1/-1; }
+  @media (max-width:760px) {
+    .portal-scroll { height: 190svh; }.portal-stage { min-height: 560px; }.door { top: 0; right: 0; left: 0; width: 100%; height: 50.1%; }.door img { width: 100%; height: 100%; object-position: center; }.door-past { bottom: auto; transform-origin: center top; transform: translateY(calc(var(--open) * -103%)) rotateX(calc(var(--open) * -7deg)); }.door-future { top: auto; bottom: 0; transform-origin: center bottom; transform: translateY(calc(var(--open) * 103%)) rotateX(calc(var(--open) * 7deg)); }.door-copy { bottom: 24px; }.door-copy b { font-size: clamp(34px,12vw,58px); }.door-future .door-copy { text-align:left; justify-items:start; }.door-number { top: 20px; }.door-future .door-number { right: 22px; }.door-past .door-number { left: 22px; }.portal-center { grid-template-columns: auto auto; }.portal-center i { grid-column:1/-1; grid-row:2; width:90px; height:1px; }.portal-scroll-cue { bottom: calc(50% - 48px); }.inner-copy { justify-content: flex-end; padding: calc(var(--header-h) + 24px) 20px 34px; }.inner-copy blockquote { font-size: clamp(29px,9vw,46px); }.inner-copy p { font-size:14px; line-height:1.65; }.inner-copy nav { margin-top:24px; }.inner-copy nav a { flex:1 1 100%; justify-content:space-between; }.archive-layout { padding-top: calc(var(--header-h) + 84px); }.archive-layout > header { grid-template-columns:1fr; margin-bottom:70px; }.archive-layout > header span { grid-column:1; }.archive-layout > header h2 { font-size:clamp(46px,15vw,72px); }.timeline li { grid-template-columns:38px minmax(0,1fr); gap:14px; }.mission-grid { grid-template-columns:1fr; }.mission-grid article,.dossier-card { grid-column:1; min-height:230px; }.archive-close { top:calc(var(--header-h) + 8px); right:14px; font-size:0; }.archive-close svg { margin:0; }.archive-backdrop img { object-position:center; }
+  }
+  @media (prefers-reduced-motion:reduce) { .portal-scroll { height:100svh; }.door { position:absolute; height:50%; }.inner-copy { opacity:0; }.portal-scroll-cue { display:none; } }
+</style>
+
+<script>
+  const portal = document.querySelector<HTMLElement>('[data-home-portal]');
+  const stage = portal?.querySelector<HTMLElement>('.portal-stage');
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let frame = 0;
+  const updatePortal = () => {
+    if (!portal || !stage || reduceMotion) return;
+    const bounds = portal.getBoundingClientRect();
+    const distance = Math.max(1, portal.offsetHeight - innerHeight);
+    const progress = Math.min(1, Math.max(0, -bounds.top / distance));
+    stage.style.setProperty('--open', progress.toFixed(4));
+    frame = 0;
+  };
+  addEventListener('scroll', () => { if (!frame) frame = requestAnimationFrame(updatePortal); }, { passive: true });
+  addEventListener('resize', updatePortal, { passive: true });
+  updatePortal();
+
+  document.querySelectorAll<HTMLButtonElement>('[data-open-archive]').forEach((button) => button.addEventListener('click', () => {
+    const dialog = document.querySelector<HTMLDialogElement>(`[data-archive="${button.dataset.openArchive}"]`);
+    dialog?.showModal();
+    document.body.classList.add('no-scroll');
+  }));
+  document.querySelectorAll<HTMLButtonElement>('[data-close-archive]').forEach((button) => button.addEventListener('click', () => {
+    button.closest<HTMLDialogElement>('dialog')?.close();
+  }));
+  document.querySelectorAll<HTMLDialogElement>('.archive-dialog').forEach((dialog) => {
+    dialog.addEventListener('close', () => document.body.classList.remove('no-scroll'));
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+  });
+</script>
+
