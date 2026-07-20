@@ -71,7 +71,7 @@ const copyByLocale: Record<Locale, HomePortalCopy> = {
     pastLead: '从一个无法融入人群的少年，到主动走向世界尽头的人。',
     futureLead: '我正在寻找的不是一个安全的位置，而是一件值得亲自抵达现场的事。',
     role: '特殊行动专员', roleSub: '卡塞尔学院执行部外勤编制', location: '卡塞尔 / 全球外勤', locationNote: '驻地服从任务调配', work: '全职', pay: '税前 8–15K / 月 + 任务津贴', payNote: '以任务结算，具体根据行动等级与风险系数面议。这份工作不是冲着钱去的。', available: '随时', availableNote: '但有些旧账要先清一清。', travel: '接受全球外勤', travelNote: '经常一出差，就是直接飞往战场。', email: 'lumingfei@cassel.edu', emailNote: '学院的，但不常看。', dossier: '档案尚未寻回', dossierNote: '我的过去写在别人的档案里，等我自己翻到了再补。',
-    innerKicker: 'THE CHOICE IS MINE', quote: ['来杯好茶摇一摇'], reflection: '摇一摇', push: '我不再等别人把门打开。我自己推。', projects: '进入项目归档', writing: '阅读行动记录', about: '查看现实档案', continueLabel: '继续浏览', reducedArchivesLabel: '打开人物档案',
+    innerKicker: 'THE CHOICE IS MINE', quote: ['我这一生', '都在学习：当没有选择时，', '依然能自己做一个选择。'], reflection: '我一直以为自己只是被推着走——被父母抛下，被学院选中，被命运逼着下跪。后来我才发现，每一条死路都留着一道窄窄的缝。', push: '我不再等别人把门打开。我自己推。', projects: '进入项目归档', writing: '阅读行动记录', about: '查看现实档案', continueLabel: '继续浏览', reducedArchivesLabel: '打开人物档案',
   },
   en: {
     pastKicker: 'PERSONAL ARCHIVE / 01', pastTitle: 'Growth Archive', pastHint: 'Open the personal archive',
