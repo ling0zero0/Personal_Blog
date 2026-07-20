@@ -18,6 +18,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Use project npm version
+        run: |
+          corepack enable
+          corepack prepare npm@10.9.4 --activate
+          npm --version
       - run: npm ci
       - run: npm run build
       - run: npx playwright install --with-deps chromium webkit
